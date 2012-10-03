@@ -9,8 +9,6 @@
 <script language="javascript" type="text/javascript">
  //<![CDATA[
 
-
-
 //Globals
  //initialise the map 
  var map;
@@ -23,13 +21,13 @@ function fillWindow(){
 	try{
 		if (window.innerHeight) { //if browser supports window.innerWidth
 			mapDiv.style.height = window.innerHeight+'px';
-			mapDiv.style.width = window.innerWidth-240+'px';
+			mapDiv.style.width = window.innerWidth-300+'px';
 			mapsMenu.style.height = window.innerHeight-245+'px';
 		}
 		else{	//MSIE
 			document.body.scroll="no";
 			mapDiv.style.height = document.body.clientHeight+'px';
-			mapDiv.style.width = document.body.clientWidth-240+'px'; 
+			mapDiv.style.width = document.body.clientWidth-300+'px'; 
 			mapsMenu.style.height = document.body.clientHeight-245+'px';
         }
 	}
@@ -37,34 +35,13 @@ function fillWindow(){
 	}
 }
 
-function getParam(n){
-	var sSearch;
-	var aPairs;
-	sSearch = (document.location.search.length > 1) ? document.location.search.substring(1) : "";
-	if (sSearch != "")
-	{
-		aPairs = sSearch.split("&");
-		for (var i = 0; i < aPairs.length; i++){
-			if(aPairs[i].split("=")[0] == n)
-				return unescape(aPairs[i].split("=")[1]);
-		}
-	}
-	return null;
-}
-
 
 function load()
 {
-	    //alert any url announcement parameter
-	    var announce = getParam("announce");
-          if(announce){
-	        if(announce != "")
-                  alert(announce);
-	    }
 	    fillWindow();
 	    
 		var mapOptions = {
-          center: new google.maps.LatLng(24.0, 80.0),
+          center: new google.maps.LatLng(22.0, 81.0),
           zoom: 5,
           mapTypeId: google.maps.MapTypeId.SATELLITE
         };
@@ -171,6 +148,33 @@ function load()
   
   <body onload="load()" style="background-color:#C0C0C0;">
     <div id="mapsMenu" style="overflow:auto; border-width: 0px; position: absolute; left: 5px; top: 245px; width: 235px; height:800px;">
+    	<div id="fb-root"></div>
+     	 <script>
+	       	 window.fbAsyncInit = function() {
+	          FB.init({
+	            appId      : 'YOUR_APP_ID', // App ID
+	            channelUrl : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
+	            status     : true, // check login status
+	            cookie     : true, // enable cookies to allow the server to access the session
+	            xfbml      : true  // parse XFBML
+	          });
+	          // Additional initialization code here
+	        };
+        	// Load the SDK Asynchronously
+	        (function(d){
+	           var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
+	           if (d.getElementById(id)) {return;}
+	           js = d.createElement('script'); js.id = id; js.async = true;
+	           js.src = "//connect.facebook.net/en_US/all.js";
+	           ref.parentNode.insertBefore(js, ref);
+	         }(document));
+      	</script>
+      	<div class="fb-login-button">Login</div>
+      	<div 
+	        class="fb-registration" 
+	        data-fields="[{'name':'name'}, {'name':'email'}]" 
+	        data-redirect-uri="register.php" >
+      	</div>
       <form name="mapList">
 		<select id="mapListMenu">
 			<option value="MauryanEmpire" selected>Mauryan Empire</option>
@@ -187,7 +191,7 @@ function load()
 	  </p>
     </div>
 
-   <div id="mapDiv" style="position:absolute; left:300px; top: 0px; height: "100%"; "></div>
+   <div id="mapDiv" style="position:absolute; left:300px; top: 0px; height: 100%"></div>
     
   </body>
   
