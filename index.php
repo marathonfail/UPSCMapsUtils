@@ -152,8 +152,8 @@ function load()
      	 <script>
 	       	 window.fbAsyncInit = function() {
 	          FB.init({
-	            appId      : 'YOUR_APP_ID', // App ID
-	            channelUrl : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
+	            appId      : '497255016953576', // App ID
+	            channelUrl : 'UPSCMapsUtils-env-96jtppihdm.elasticbeanstalk.com/channel.html', // Channel File
 	            status     : true, // check login status
 	            cookie     : true, // enable cookies to allow the server to access the session
 	            xfbml      : true  // parse XFBML
@@ -173,7 +173,7 @@ function load()
       	<div 
 	        class="fb-registration" 
 	        data-fields="[{'name':'name'}, {'name':'email'}]" 
-	        data-redirect-uri="register.php" >
+	        data-redirect-uri="http://UPSCMapsUtils-env-96jtppihdm.elasticbeanstalk.com/register.php" >
       	</div>
       <form name="mapList">
 		<select id="mapListMenu">
