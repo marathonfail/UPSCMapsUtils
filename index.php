@@ -271,8 +271,8 @@ function load()
 		<p>
 			map++ is a utility built exclusively for Civil Service aspirants with
 			History and Geography optionals to practice for map based questions
-			which fetches easy marks with good practice. It allows you to create
-			your own custom maps, share it with your friends, groups all for <font
+			which fetches easy marks with good practice. map++ allows you to create
+			your own custom maps, share it with your friends and groups all for <font
 				color="green"><b>FREE!</b> </font>
 		</p>
 
