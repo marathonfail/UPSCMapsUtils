@@ -1,3 +1,6 @@
+<?php include_once 'fbaccess.php'; ?>
+
+
 
 <html>
   <head>
@@ -147,13 +150,13 @@ function load()
 </head>
   
   <body onload="load()" style="background-color:#C0C0C0;">
-    <div id="mapsMenu" style="overflow:auto; border-width: 0px; position: absolute; left: 5px; top: 245px; width: 235px; height:800px;">
+    <div id="mapsMenu" style="overflow:auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height:100%;">
     	<div id="fb-root"></div>
      	 <script>
 	       	 window.fbAsyncInit = function() {
 	          FB.init({
 	            appId      : '497255016953576', // App ID
-	            channelUrl : 'UPSCMapsUtils-env-96jtppihdm.elasticbeanstalk.com/channel.html', // Channel File
+	            channelUrl : 'http://UPSCMapsUtils-env-96jtppihdm.elasticbeanstalk.com/channel.html', // Channel File
 	            status     : true, // check login status
 	            cookie     : true, // enable cookies to allow the server to access the session
 	            xfbml      : true  // parse XFBML
@@ -169,7 +172,12 @@ function load()
 	           ref.parentNode.insertBefore(js, ref);
 	         }(document));
       	</script>
-      	<div class="fb-login-button">Login</div>
+      	<?php  if (!$user) { ?>
+      		<div class="fb-login-button">Login</div>
+      	<?php } else { ?>
+      		<div class="fb-logout-button">Logout</div>
+      	<?php }?>
+      	
       	<div 
 	        class="fb-registration" 
 	        data-fields="[{'name':'name'}, {'name':'email'}]" 
