@@ -1,13 +1,27 @@
 <?php include_once 'fbaccess.php'; ?>
 
-
-
 <html>
-  <head>
-    <title>Maps for IAS/IPS/IFS Exams</title>
-    <script src="http://maps.google.com/maps/api/js?key=AIzaSyByDaJQtdfxMBDxYRXVQqISAXCgCqSKul0&sensor=false" 
-    		type="text/javascript">
+<head>
+<title>maps++ | Maps for IAS/IPS/IFS Exams</title>
+<script
+	src="http://maps.google.com/maps/api/js?key=AIzaSyByDaJQtdfxMBDxYRXVQqISAXCgCqSKul0&sensor=false"
+	type="text/javascript">
     </script>
+ <script src="js/MarkerWithLabel.js" type="text/javascript"></script>
+ 
+ <style type="text/css">
+   .labels {
+     color: red;
+     background-color: white;
+     font-family: "Lucida Grande", "Arial", sans-serif;
+     font-size: 10px;
+     font-weight: bold;
+     text-align: center;
+     width: 40px;     
+     border: 2px solid black;
+     white-space: nowrap;
+   }
+ </style>
 
 <script language="javascript" type="text/javascript">
  //<![CDATA[
@@ -25,13 +39,13 @@ function fillWindow(){
 		if (window.innerHeight) { //if browser supports window.innerWidth
 			mapDiv.style.height = window.innerHeight+'px';
 			mapDiv.style.width = window.innerWidth-300+'px';
-			mapsMenu.style.height = window.innerHeight-245+'px';
+			mapsMenu.style.height = window.innerHeight+'px';
 		}
 		else{	//MSIE
 			document.body.scroll="no";
 			mapDiv.style.height = document.body.clientHeight+'px';
 			mapDiv.style.width = document.body.clientWidth-300+'px'; 
-			mapsMenu.style.height = document.body.clientHeight-245+'px';
+			mapsMenu.style.height = document.body.clientHeight+'px';
         }
 	}
 	catch(ex){
@@ -65,7 +79,6 @@ function load()
 	     google.maps.event.addListener(currMarker, 'click', function(event) {
 	        
 	     }); 
-	    
  }
  
  function clearMap() {
@@ -81,44 +94,72 @@ function load()
  
  function getPlaces(selectedMap) {
    var places = {
-     MauryanEmpire: [
+     MetropolitanCities: [
       {
-        name: "place1",
-      	latLng: new google.maps.LatLng(10.0, 78.0)
+        name: "Delhi",
+      	latLng: new google.maps.LatLng(29.01, 77.38)
       },
       {
-        name: "place2",
-      	latLng: new google.maps.LatLng(20.0, 74.0)
+        name: "Kolkata",
+      	latLng: new google.maps.LatLng(22.56, 88.36)
+      },
+      {
+          name: "Mumbai",
+          latLng: new google.maps.LatLng(18.96, 72.82)
+      },
+      {
+          name: "Chennai",
+       	  latLng: new google.maps.LatLng(13.08, 80.27)
+      },
+      {
+          name: "Hyderabad",
+          latLng: new google.maps.LatLng(17.36, 78.46)
+      },
+      {
+          name: "Bangalore",
+       	  latLng: new google.maps.LatLng(12.98, 77.58)
       }
      ], 
-     MajorRockEdicts: [
+     NuclearPowerPlants: [
+		{
+		    name: "Tarapur",
+		  	latLng: new google.maps.LatLng(19.49, 72.39)
+		  },
+		  {
+		    name: "Kalpakkam",
+		  	latLng: new google.maps.LatLng(12.50, 80.15)
+		  },
+		  {
+		      name: "Narora",
+		      latLng: new google.maps.LatLng(27.5, 78.43)
+		  },
+		  {
+		      name: "Kudankulam",
+		   	  latLng: new google.maps.LatLng(8.163, 77.71)
+		  }
+     ],
+     IndusValleyCivilization: [
       {
-        name: "place3",
-      	latLng: new google.maps.LatLng(26, 73.0)
+        name: "Mohenjadaro",
+      	latLng: new google.maps.LatLng(27.32, 68.13)
       },
       {
-        name: "place4",
-      	latLng: new google.maps.LatLng(26.0, 86.0)
-      }
+          name: "Harappa",
+          latLng: new google.maps.LatLng(30.63, 72.88)
+       }
      ],
-     MinorRockEdicts: [
-      {
-        name: "place5",
-      	latLng: new google.maps.LatLng(29.5, 87.5)
-      }
-     ],
-     MauryanEmpireUnderAshoka: [
+     MangrovesInIndia: [
 		{
-		 name: "place6",
-		 latLng: new google.maps.LatLng(25.0, 82.0)
+		 name: "Pichavaram",
+		 latLng: new google.maps.LatLng(11.43, 79.77)
 		},
 		{
-		 name: "place7",
-		 latLng: new google.maps.LatLng(27.9, 88.0)
+		 name: "Sundarbans",
+		 latLng: new google.maps.LatLng(21.94, 88.9)
 		},
 		{
-		 name: "place8",
-		 latLng: new google.maps.LatLng(30.0, 75.0)
+		 name: "Bhitarkanika",
+		 latLng: new google.maps.LatLng(20.67, 87.0)
 		}      
      ]
    };
@@ -126,7 +167,7 @@ function load()
  }
  
  function loadPlaces() {
-   var selectMapOption = document.getElementById("mapListMenu");
+   var selectMapOption = document.getElementById("sampleMapListDropDown");
    var selectedMap = selectMapOption.options[selectMapOption.selectedIndex].value;
    if (placesMarked == null) {
     placesMarked = [];
@@ -136,71 +177,170 @@ function load()
    }
    var placesToLoad = getPlaces(selectedMap);
    for (var i in placesToLoad) {
-    var placeMarker = new google.maps.Marker({
+    var placeMarker = new MarkerWithLabel({
       position: placesToLoad[i].latLng, 
       map: map,
-      title: placesToLoad[i].name
+      title: placesToLoad[i].name,
+      labelContent: placesToLoad[i].name,
+      labelAnchor: new google.maps.Point(22, 0),
+      labelClass: "labels",
+      labelStyle: {opacity: 0.75}
      });
      placesMarked.push(placeMarker);
     }
  }
+
+ var practicePlaces=[]
+ var practiceMapMarker;
+ var practicePlaceNumber = 0;
+ var practicePlaceAsked;
+ 
+ var practiceScore=0;
+ var practiceMaxScore=0;
+ var included = false;
+
+ function checkAnswer() {
+	 practiceMapMarker=currMarker;
+	 var tolerableError = 1;
+	 if (practiceMapMarker.getPosition() != null) {
+		 var error = Math.pow(practiceMapMarker.getPosition().lat() - practicePlaceAsked.latLng.lat(), 2.0) 
+		 				+ Math.pow(practiceMapMarker.getPosition().lng() - practicePlaceAsked.latLng.lng(), 2.0);  
+		 if (error <= tolerableError) {
+			 if (!included)
+			 	practiceScore++;
+			 alert("Congratulations!! Your answer is correct, your score is now: " + practiceScore);
+			 return true;
+		 } else {
+			 alert("Your answer is wrong, click cancel to try again");
+			 return false;
+		 }
+		 return false;
+	 }
+ }
+ 
+ function showPlace() {
+	 if (practicePlaceNumber < practicePlaces.length) {
+		 included = false;
+		 var newHtml = "<p>Place: " + practicePlaces[practicePlaceNumber].name;
+		 newHtml += "<form><input type=\"button\"  name=\"Submit\" value=\"Next\"" +
+		 			"onClick=\"var r = checkAnswer(); if (r) showPlace(); return true;\"></form>";
+		 document.getElementById('sampleMapPracticePlace').innerHTML = newHtml;
+		 practicePlaceAsked = practicePlaces[practicePlaceNumber];
+		 practicePlaceNumber++;
+	 } else {
+		 var newHtml = "<p>Your score is " + practiceScore + "/" + practiceMaxScore
+		 					+ ". Select a different map and press 'Go' to take another test. <p>";
+		 document.getElementById('sampleMapPracticePlace').innerHTML = newHtml;
+	 }
+ }
+
+ function clearPracticeVars() {
+	 practicePlaces=[]
+	 practiceMapMarker=null;
+	 practicePlaceNumber = 0;
+	 practicePlaceAsked = null;
+	 practiceScore=0;
+	 practiceMaxScore=0;
+	 document.getElementById('sampleMapPracticePlace').innerHTML = "";
+ }
+
+ function loadPlacesForPractice() {
+	   clearPracticeVars();
+	   var selectMapOption = document.getElementById("sampleMapPracticeDropDown");
+	   var selectedMap = selectMapOption.options[selectMapOption.selectedIndex].value;
+	   if (placesMarked == null) {
+	    placesMarked = [];
+	   } else {
+	    placesMarked = null;
+	    placesMarked = [];
+	   }
+	   practicePlaces = getPlaces(selectedMap);
+	   practiceMaxScore = practicePlaces.length;
+	   clearMap();
+	   showPlace();
+  }
  
 </script>
-    
+
 </head>
-  
-  <body onload="load()" style="background-color:#C0C0C0;">
-    <div id="mapsMenu" style="overflow:auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height:100%;">
-    	<div id="fb-root"></div>
-     	 <script>
-	       	 window.fbAsyncInit = function() {
-	          FB.init({
-	            appId      : '497255016953576', // App ID
-	            channelUrl : 'http://UPSCMapsUtils-env-96jtppihdm.elasticbeanstalk.com/channel.html', // Channel File
-	            status     : true, // check login status
-	            cookie     : true, // enable cookies to allow the server to access the session
-	            xfbml      : true  // parse XFBML
-	          });
-	          // Additional initialization code here
-	        };
-        	// Load the SDK Asynchronously
-	        (function(d){
-	           var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
-	           if (d.getElementById(id)) {return;}
-	           js = d.createElement('script'); js.id = id; js.async = true;
-	           js.src = "//connect.facebook.net/en_US/all.js";
-	           ref.parentNode.insertBefore(js, ref);
-	         }(document));
-      	</script>
-      	<?php  if (!$user) { ?>
-      		<div class="fb-login-button">Login</div>
-      	<?php } else { ?>
-      		<div class="fb-logout-button">Logout</div>
-      	<?php }?>
-      	
+
+<body onload="load()" style="background-color: #FBF8EF" >
+	<div id="mapsMenu"
+		style="overflow: auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height: 100%;">
+		<b>About:</b>
+		<p>
+			map++ is a utility built exclusively for Civil Service aspirants with
+			History and Geography optionals to practice for map based questions
+			which fetches easy marks with good practice. It allows you to create
+			your own custom maps, share it with your friends, groups all for <font
+				color="green"><b>FREE!</b> </font>
+		</p>
+
+		<div id="fb-root"></div>
+		<script>
+        window.fbAsyncInit = function() {
+          FB.init({
+            appId      : '497255016953576', // App ID
+            channelUrl : 'http://upscmapsutils-env-96jtppihdm.elasticbeanstalk.com/channel.html', // Channel File
+            status     : true, // check login status
+            cookie     : true, // enable cookies to allow the server to access the session
+            xfbml      : true  // parse XFBML
+          });
+        };
+        // Load the SDK Asynchronously
+        (function(d){
+           var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
+           if (d.getElementById(id)) {return;}
+           js = d.createElement('script'); js.id = id; js.async = true;
+           js.src = "//connect.facebook.net/en_US/all.js";
+           ref.parentNode.insertBefore(js, ref);
+         }(document));
+      </script>
+		<p>No registration required!, simply login with your facebook account,
+			and unleash the power of maps++ and see the difference for yourself!
+		</p>
+		<center>
+			<div class="fb-login-button">Login</div>
+		</center>
+
+		<!--  	
       	<div 
 	        class="fb-registration" 
 	        data-fields="[{'name':'name'}, {'name':'email'}]" 
 	        data-redirect-uri="http://UPSCMapsUtils-env-96jtppihdm.elasticbeanstalk.com/register.php" >
       	</div>
-      <form name="mapList">
-		<select id="mapListMenu">
-			<option value="MauryanEmpire" selected>Mauryan Empire</option>
-			<option value="MauryanEmpireUnderAshoka">Mauryan Empire Under Ashoka</option>
-			<option value="MajorRockEdicts">Major Rock Edicts</option>
-			<option value="MinorRockEdicts">Minor Rock Edicts</option>
-		</select>
-		<input type="button" name="Submit" value="Go" 
-			onClick="var r = clearMap(); if (r) loadPlaces(); return true;">
-      </form>
-      <p>
-      <img src="http://code.google.com/appengine/images/appengine-silver-120x30.gif" 
-		 alt="Powered by Google App Engine" />
-	  </p>
-    </div>
+      	 -->
+		<p>Not convinced still? Check out our sample maps, and some practice
+			tests.</p>
+		<p>View Sample Map:
+		
+		
+		<form name="sampleMapList">
+			<select id="sampleMapListDropDown">
+				<option value="MetropolitanCities" selected>Metropolitan Cities</option>
+				<option value="NuclearPowerPlants">Nuclear Power Plants in India</option>
+				<option value="IndusValleyCivilization">Indus Valley Civilization</option>
+				<option value="MangrovesInIndia">Mangroves In India</option>
+			</select> <input type="button" name="Submit" value="Go"
+				onClick="var r = clearMap(); if (r) loadPlaces(); return true;">
+		</form>
+		Practice Map:
+		<form name="sampleMapPractice">
+			<select id="sampleMapPracticeDropDown">
+				<option value="MetropolitanCities" selected>Metropolitan Cities</option>
+				<option value="NuclearPowerPlants">Nuclear Power Plants in India</option>
+				<option value="IndusValleyCivilization">Indus Valley Civilization</option>
+				<option value="MangrovesInIndia">Mangroves In India</option>
+			</select> <input type="button" name="Submit" value="Go"
+				onClick="var r = clearMap(); if (r) loadPlacesForPractice(); return true;">
+		</form>
+		<div id="sampleMapPracticePlace"></div>
+		</p>
+	</div>
 
-   <div id="mapDiv" style="position:absolute; left:300px; top: 0px; height: 100%"></div>
-    
-  </body>
-  
+	<div id="mapDiv"
+		style="position: absolute; left: 300px; top: 0px; height: 100%"></div>
+
+</body>
+
 </html>
