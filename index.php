@@ -293,15 +293,15 @@ function load()
 	<div id="infoDiv"
 		style="overflow: auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height: 100%;">
 		<?php
-		echo $user; 
 		if ($user) {
 				try {
 					$user_info = $facebook->api('/'.$user);
+					echo $user_info;
 					echo "<p>Welcome, " + $user_info['name'];
 				} catch (FacebookApiException $e) {
 					error_log($e);
 				}
-		} else {?> 
+		} ?> 
 		<b>About:</b>
 		<p>
 			map++ is a utility built exclusively for Civil Service aspirants with
@@ -310,7 +310,8 @@ function load()
 			your own custom maps, share it with your friends and groups all for <font
 				color="green"><b>FREE!</b> </font>
 		</p>
-
+		
+		<?php if (!$user) { ?>
 		<div id="fb-root"></div>
 		<script>
         window.fbAsyncInit = function() {
@@ -337,6 +338,10 @@ function load()
 		<center>
 			<div class="fb-login-button">Login</div>
 		</center>
+		<p>Not convinced still? Check out our sample maps, and some practice
+			tests.</p>
+		<?php } else { ?>
+		<p>View our Sample Tests</p>
 		<?php } ?>
 		<!--  	
       	<div 
@@ -345,11 +350,8 @@ function load()
 	        data-redirect-uri="http://UPSCMapsUtils-env-96jtppihdm.elasticbeanstalk.com/register.php" >
       	</div>
       	 -->
-		<p>Not convinced still? Check out our sample maps, and some practice
-			tests.</p>
+		
 		<p>View Sample Map:
-		
-		
 		<form name="sampleMapList">
 			<select id="sampleMapListDropDown">
 				<option value="MetropolitanCities" selected>Metropolitan Cities</option>
