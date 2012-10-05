@@ -294,12 +294,7 @@ function load()
 		style="overflow: auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height: 100%;">
 		<?php
 		if ($user) {
-				try {
-					echo "<p>Welcome, " + $user_profile['name'] + "</p>";
-				} catch (FacebookApiException $e) {
-					echo $e;
-					error_log($e);
-				}
+			print_r ("<p>Welcome, ".$user_profile['name']."</p>");
 		} ?>
 		<b>About:</b>
 		<p>
