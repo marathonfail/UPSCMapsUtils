@@ -295,8 +295,7 @@ function load()
 		<?php
 		if ($user) {
 				try {
-					$user_info = $facebook->api('/'.$user);
-					echo "<p>Welcome, " + $user_info->{'name'};
+					echo "<p>Welcome, " + $user_profile['name'] + "</p>";
 				} catch (FacebookApiException $e) {
 					error_log($e);
 				}
