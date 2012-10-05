@@ -24,24 +24,14 @@ if($user) {
 
 if($user)  {
 	$loginUrl = $facebook->getLoginUrl(array(
-			//'scope'		=> 'Your list of Permissions', // Permissions to request from the user
+			'scope'		=> 'scope:email', // Permissions to request from the user
 			'redirect_uri'	=> 'http://upscmapsutils-env-96jtppihdm.elasticbeanstalk.com/', // URL to redirect the user to once the login/authorization process is complete.
 	));
 } else {
-
 	$logoutUrl = $facebook->getLogoutUrl(array(
 			'next'	=> 'http://upscmapsutils-env-96jtppihdm.elasticbeanstalk.com', // URL to which to redirect the user after logging out
 	));
 }
-
-if ($user) {
-	try {
-		$user_info = $facebook->api('/'.$user);
-	} catch (FacebookApiException $e) {
-		error_log($e);
-	}
-}
-
 
 
 

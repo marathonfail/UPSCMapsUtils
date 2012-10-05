@@ -7,7 +7,7 @@
 	src="http://maps.google.com/maps/api/js?key=AIzaSyByDaJQtdfxMBDxYRXVQqISAXCgCqSKul0&sensor=false"
 	type="text/javascript">
     </script>
- <script src="js/MarkerWithLabel.js" type="text/javascript"></script>
+<script src="js/MarkerWithLabel.js" type="text/javascript"></script>
  
  <style type="text/css">
    .labels {
@@ -326,7 +326,7 @@ function load()
 			and unleash the power of maps++ and see the difference for yourself!
 		</p>
 		<center>
-			<div class="fb-login-button">Login</div>
+			<div class="fb-login-button" scope="email">Login</div>
 		</center>
 
 		<!--  	
