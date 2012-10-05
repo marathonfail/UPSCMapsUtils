@@ -293,9 +293,9 @@ function load()
 	<div id="infoDiv"
 		style="overflow: auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height: 100%;">
 		<?php
-		if ($user) {
-			print_r ("<p>Welcome, ".$user_profile['name']."</p>");
-		} ?>
+		if ($user) : ?>
+			Welcome, <?= $user_profile['name']; ?> <br>
+		<?php endif ?>
 		<b>About:</b>
 		<p>
 			map++ is a utility built exclusively for Civil Service aspirants with
