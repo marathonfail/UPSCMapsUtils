@@ -24,7 +24,7 @@ if($user) {
 
 if($user)  {
 	$loginUrl = $facebook->getLoginUrl(array(
-			'scope'		=> 'scope:email', // Permissions to request from the user
+			'scope'		=> 'email', // Permissions to request from the user
 			'redirect_uri'	=> 'http://upscmapsutils-env-96jtppihdm.elasticbeanstalk.com/', // URL to redirect the user to once the login/authorization process is complete.
 	));
 } else {

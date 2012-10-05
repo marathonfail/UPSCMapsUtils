@@ -294,7 +294,7 @@ function load()
     
 	<div id="infoDiv"
 		style="overflow: auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height: 100%;">
-		
+		Welcome, <?= $user_profile['firstname']?>
 	</div>
 	<div id="mapDiv"
 		style="position: absolute; left: 300px; top: 0px; height: 100%"></div>
