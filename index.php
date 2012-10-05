@@ -296,12 +296,11 @@ function load()
 		if ($user) {
 				try {
 					$user_info = $facebook->api('/'.$user);
-					echo $user_info;
-					echo "<p>Welcome, " + $user_info['name'];
+					echo "<p>Welcome, " + $user_info->{'name'};
 				} catch (FacebookApiException $e) {
 					error_log($e);
 				}
-		} ?> 
+		} ?>
 		<b>About:</b>
 		<p>
 			map++ is a utility built exclusively for Civil Service aspirants with
