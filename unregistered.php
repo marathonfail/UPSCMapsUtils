@@ -1,5 +1,8 @@
 <?php include_once 'fbaccess.php'; ?>
 
+<html>
+<head>
+<title>maps++ | Maps for IAS/IPS/IFS Exams</title>
 <script
 	src="http://maps.google.com/maps/api/js?key=AIzaSyByDaJQtdfxMBDxYRXVQqISAXCgCqSKul0&sensor=false"
 	type="text/javascript">
@@ -283,8 +286,14 @@ function load()
   }
  
 </script>
+</head>
 
-<b>About:</b>
+
+<body onload="load()" style="background-color: #D8D8D8" >
+    
+	<div id="infoDiv"
+		style="overflow: auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height: 100%;">
+	<b>About:</b>
 	<p>
 			map++ is a utility built exclusively for Civil Service aspirants with
 			History and Geography optionals to practice for map based questions
@@ -330,8 +339,6 @@ function load()
 		<p>Not convinced still? Check out our sample maps, and some practice
 			tests.</p>
 		<p>View Sample Map:
-		
-		
 		<form name="sampleMapList">
 			<select id="sampleMapListDropDown">
 				<option value="MetropolitanCities" selected>Metropolitan Cities</option>
@@ -341,7 +348,8 @@ function load()
 			</select> <input type="button" name="Submit" value="Go"
 				onClick="var r = clearMap(); if (r) loadPlaces(); return true;">
 		</form>
-		Practice Map:
+		
+		<p> Practice Map:
 		<form name="sampleMapPractice">
 			<select id="sampleMapPracticeDropDown">
 				<option value="MetropolitanCities" selected>Metropolitan Cities</option>
@@ -352,7 +360,12 @@ function load()
 				onClick="var r = clearMap(); if (r) loadPlacesForPractice(); return true;">
 		</form>
 		<div id="sampleMapPracticePlace"></div>
-		</p>
+		
+		
 	</div>
+	<div id="mapDiv"
+		style="position: absolute; left: 300px; top: 0px; height: 100%"></div>
 
 </body>
+
+</html>
