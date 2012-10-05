@@ -295,8 +295,10 @@ function load()
 		<?php
 		if ($user) {
 				try {
+					echo $user_profile;
 					echo "<p>Welcome, " + $user_profile['name'] + "</p>";
 				} catch (FacebookApiException $e) {
+					echo $e;
 					error_log($e);
 				}
 		} ?>
