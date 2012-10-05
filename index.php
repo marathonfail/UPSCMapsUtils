@@ -58,12 +58,38 @@ function load()
 	    fillWindow();
 	    
 		var mapOptions = {
+		  mapTypeControlOptions: {
+			  mapTypeIds: ['outline', google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN]
+		  },
           center: new google.maps.LatLng(22.0, 81.0),
           zoom: 5,
-          mapTypeId: google.maps.MapTypeId.SATELLITE
+          mapTypeId: 'outline'
         };
+
+        var outlineMapStyleOpts = [ 
+                { 
+            	"featureType": "administrative", "elementType": "labels", "stylers": 
+                	[ { "visibility": "off" } ] 
+    			},
+    			{ "featureType": "landscape", "elementType": "geometry", "stylers": 
+        			[ { "visibility": "on" } ] 
+    			},
+        		{ "featureType": "road", "elementType": "geometry", "stylers":
+            		 [ { "visibility": "off" } ] 
+       		    },
+       		    { "featureType": "poi", "elementType": "labels", "stylers": 
+           		    [ { "visibility": "off" } ] 
+       		    },
+       		    { "featureType": "landscape.natural", "stylers":
+       		        [ { "weight": 0.1 }, { "color": "#ffffff" } ] 
+       		    },
+   		        { "featureType": "poi.park", "stylers": 
+   	   		        [ { "color": "#ffffff" } ] 
+	   		    } 
+	   ];
         
 	    map = new google.maps.Map(document.getElementById("mapDiv"), mapOptions);
+	    map.mapTypes.set('outline', new google.maps.StyledMapType(outlineMapStyleOpts, { name: 'Outline' }));
 	    
 	    currMarker = new google.maps.Marker({
 	          position: map.getCenter(),
@@ -264,7 +290,7 @@ function load()
 
 </head>
 
-<body onload="load()" style="background-color: #FBF8EF" >
+<body onload="load()" style="background-color: #D8D8D8" >
 	<div id="mapsMenu"
 		style="overflow: auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height: 100%;">
 		<b>About:</b>
