@@ -17,7 +17,6 @@
      font-size: 10px;
      font-weight: bold;
      text-align: center;
-     width: 40px;     
      border: 2px solid black;
      white-space: nowrap;
    }
@@ -34,18 +33,18 @@
  
 function fillWindow(){
 	var mapDiv = document.getElementById("mapDiv");
-	var mapsMenu = document.getElementById("mapsMenu");
+	var infoDiv = document.getElementById("infoDiv");
 	try{
 		if (window.innerHeight) { //if browser supports window.innerWidth
 			mapDiv.style.height = window.innerHeight+'px';
 			mapDiv.style.width = window.innerWidth-300+'px';
-			mapsMenu.style.height = window.innerHeight+'px';
+			infoDiv.style.height = window.innerHeight+'px';
 		}
 		else{	//MSIE
 			document.body.scroll="no";
 			mapDiv.style.height = document.body.clientHeight+'px';
 			mapDiv.style.width = document.body.clientWidth-300+'px'; 
-			mapsMenu.style.height = document.body.clientHeight+'px';
+			infoDiv.style.height = document.body.clientHeight+'px';
         }
 	}
 	catch(ex){
@@ -208,7 +207,7 @@ function load()
       map: map,
       title: placesToLoad[i].name,
       labelContent: placesToLoad[i].name,
-      labelAnchor: new google.maps.Point(22, 0),
+      labelAnchor: new google.maps.Point(30, 0),
       labelClass: "labels",
       labelStyle: {opacity: 0.75}
      });
@@ -291,8 +290,18 @@ function load()
 </head>
 
 <body onload="load()" style="background-color: #D8D8D8" >
-	<div id="mapsMenu"
+	<div id="infoDiv"
 		style="overflow: auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height: 100%;">
+		<?php
+		echo $user; 
+		if ($user) {
+				try {
+					$user_info = $facebook->api('/'.$user);
+					echo "<p>Welcome, " + $user_info['name'];
+				} catch (FacebookApiException $e) {
+					error_log($e);
+				}
+		} else {?> 
 		<b>About:</b>
 		<p>
 			map++ is a utility built exclusively for Civil Service aspirants with
@@ -328,7 +337,7 @@ function load()
 		<center>
 			<div class="fb-login-button">Login</div>
 		</center>
-
+		<?php } ?>
 		<!--  	
       	<div 
 	        class="fb-registration" 
