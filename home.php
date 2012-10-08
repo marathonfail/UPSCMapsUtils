@@ -7,6 +7,29 @@ else:
 <html>
  <head>
 <title>maps++ | Maps for IAS/IPS/IFS Exams</title>
+
+ <style type="text/css">
+ 			
+			.tabs li {
+				list-style:none;
+				display:inline;
+			}
+
+			.tabs a {
+				padding:5px 10px;
+				display:inline-block;
+				background:#666;
+				color:#fff;
+				text-decoration:none;
+			}
+
+			.tabs a.active {
+				background:#fff;
+				color:#000;
+			}
+ </style>
+ <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+ 
  <script
 	src="http://maps.google.com/maps/api/js?key=AIzaSyByDaJQtdfxMBDxYRXVQqISAXCgCqSKul0&sensor=false"
 	type="text/javascript">
@@ -288,6 +311,68 @@ function load()
 	   clearMap();
 	   showPlace();
   }
+
+
+
+//Wait until the DOM has loaded before querying the document
+	$(document).ready(function(){
+		$('ul.tabs').each(function(){
+			// For each set of tabs, we want to keep track of
+			// which tab is active and it's associated content
+			var $active, $content, $links = $(this).find('a');
+
+			// If the location.hash matches one of the links, use that as the active tab.
+			// If no match is found, use the first link as the initial active tab.
+			$active = $($links.filter('[href="'+location.hash+'"]')[0] || $links[0]);
+			$active.addClass('active');
+			$content = $($active.attr('href'));
+
+			// Hide the remaining content
+			$links.not($active).each(function () {
+				$($(this).attr('href')).hide();
+			});
+
+			// Bind the click event handler
+			$(this).on('click', 'a', function(e){
+				// Make the old tab inactive.
+				$active.removeClass('active');
+				$content.hide();
+
+				// Update the variables with the new link and content
+				$active = $(this);
+				$content = $($(this).attr('href'));
+
+				// Make the tab active.
+				$active.addClass('active');
+				$content.show();
+
+				// Prevent the anchor's default click action
+				e.preventDefault();
+			});
+		});
+
+		// this is the id of the submit button
+		$("#submitButton").click(function() {
+
+		    var url = "createMap.php"; // the script where you handle the form input.
+			document.getElementById("createMapAjaxLoader").style.visibility='visible';
+		    $.ajax({
+		           type: "POST",
+		           url: url,
+		           data: $("#createMapForm").serialize(), // serializes the form's elements.
+		           success: function(data)
+		           {
+		        	   document.getElementById("createMapAjaxLoader").style.visibility='hidden';
+		               document.getElementById("createMapResponse").innerHTML = data; // show response from the php script.
+		           }
+	         });
+
+		    return false; // avoid to execute the actual submit of the form.
+		});
+	});
+
+	
+  
 </script>
 </head>
 
@@ -297,8 +382,29 @@ function load()
 		style="overflow: auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height: 100%;">
 		Welcome, <?= $user_profile['name']?>
 		<a href=<?= $logoutUrl ?> >Logout</a>
-		<div id="tabs">
-			
+		<ul class='tabs'>
+		    <li><a href='#AddPlace'>Add</a></li>
+		    <li><a href='#BrowseMaps'>Search</a></li>
+		    <li><a href='#Practice'>Practice</a></li>
+		</ul>
+		<div id='AddPlace'>
+		    <p>You can add places to new maps or the existing maps.</p>
+		    <div id="createMap">
+		    	<form id="createMapForm" action="createMap.php" method="post">
+		    		<input type="text" name="mapName" value="Name of the map" size=15/> <br>
+		    		<input type="text" name="mapDescription" value="Description of the map" size=40/>
+		    		<input type="submit" id="submitButton" value="Create Map"/>
+		    		<img src="static/images/ajax-loader.gif" style="visibility: hidden" id="createMapAjaxLoader"/>
+		    	</form>
+		    </div>
+		    <div id="createMapResponse"></div>
+		    
+		</div>
+		<div id='BrowseMaps'>
+		    <p>Search for maps and places here.</p>
+		</div>
+		<div id='Practice'>
+		    <p>Take map practice here.</p>
 		</div>
 	</div>
 	<div id="mapDiv"
