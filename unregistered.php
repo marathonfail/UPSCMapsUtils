@@ -306,8 +306,8 @@ function load()
 		<script>
         window.fbAsyncInit = function() {
           FB.init({
-            appId      : '497255016953576', // App ID
-            channelUrl : 'http://upscmapsutils-env-96jtppihdm.elasticbeanstalk.com/channel.html', // Channel File
+            appId      : '<?= $app_id ?>', // App ID
+            channelUrl : '<?= $url ?>/channel.html', // Channel File
             status     : true, // check login status
             cookie     : true, // enable cookies to allow the server to access the session
             xfbml      : true  // parse XFBML

@@ -1,5 +1,8 @@
 <?php 
 require_once 'fbaccess.php';
+if (!$user):
+	require_once 'logout.php';
+else:
 ?>
 <html>
  <head>
@@ -89,7 +92,7 @@ function load()
 	   ];
         
 	    map = new google.maps.Map(document.getElementById("mapDiv"), mapOptions);
-	    map.mapTypes.set('outline', new google.maps.StyledMapType(outlineMapStyleOpts, { name: 'Outline' }));
+	    map.mapTypes.set('outline', new google.maps.StyledMapType(outlineMapStyleOpts, { name: 'Outline Map' }));
 	    
 	    currMarker = new google.maps.Marker({
 	          position: map.getCenter(),
@@ -285,16 +288,18 @@ function load()
 	   clearMap();
 	   showPlace();
   }
- 
 </script>
 </head>
 
 
 <body onload="load()" style="background-color: #D8D8D8" >
-    
-	<div id="infoDiv"
+    <div id="infoDiv"
 		style="overflow: auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height: 100%;">
-		Welcome, <?= $user_profile['firstname']?>
+		Welcome, <?= $user_profile['name']?>
+		<a href=<?= $logoutUrl ?> >Logout</a>
+		<div id="tabs">
+			
+		</div>
 	</div>
 	<div id="mapDiv"
 		style="position: absolute; left: 300px; top: 0px; height: 100%"></div>
@@ -302,3 +307,6 @@ function load()
 </body>
 
 </html>
+
+<?php endif; 
+?>
