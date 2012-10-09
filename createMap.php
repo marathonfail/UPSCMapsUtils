@@ -7,42 +7,48 @@ include_once 'fbaccess.php';
 if (!$user):
 require_once 'logout.php';
 else:
-$dynamo = new AmazonDynamoDB();
-$dynamo->set_hostname("dynamodb.ap-southeast-1.amazonaws.com");
-$dynamo->disable_ssl_verification();
 
 $flash_success = NULL;
-$flash_error = NULL;
+$flash_error = NULL; 
 
-$getMapResponse = $dynamo->get_item(array(
-		"TableName" => "MapPlusPlusMaps",
+$userNum = intval($user);
+date_default_timezone_set('Asia/Kolkata');
+$date = date('Y/m/d h:i:s a', time());
+
+$getUserMapResponse = $dynamo->get_item(array(
+		"TableName" => "MapPlusPlusUserMaps",
 		"Key" => $dynamo->attributes(array(
-				"HashKeyElement" => $mapName,
+				'HashKeyElement' => $userNum,
+				'RangeKeyElement' => $mapName,
 		)),
-		"AttributesToGet" => array("MapName"),
+		"AttributesToGet" => array("UserId", "MapName"),
 )
 );
-if ($getMapResponse->isOK()) {
-	$mapItem = $getMapResponse->body->Item;
-	if ($mapItem) {
-		$flash_error = "Map with the given name already exists, use a new name";
-		// map already exists.
+if ($getUserMapResponse->isOK()) {
+	$userMapItem = $getUserMapResponse->body->Item;
+	if ($userMapItem) {
+		$flash_error = "Map with the given name already exists, try with a different name";
+		// map already exists, show him other options.
 	} else {
-		// create a new map.
-		$createMapResponse = $dynamo->put_item(array(
-				"TableName" => "MapPlusPlusMaps",
-				"Item" => $dynamo->attributes(array(
-						"MapName" => $mapName,
-						"mapDescription" => $mapDescription
-				)
-				)
-		));
-		if ($createMapResponse->isOK()) {
-			$flash_success = "Successfully created map";
-		} else {
-			$flash_error = "Unable to create map at this time, please try again later.";
-		}
+			$createUserMapResponse = $dynamo->put_item(array(
+					"TableName" => "MapPlusPlusUserMaps",
+					"Item" => $dynamo->attributes(array(
+							"UserId" => $userNum,
+							"MapName" => $mapName,
+							"mapDescription" => $mapDescription,
+							"createdBy" => $user,
+							"creationDate" => $date
+					))
+			));
+			
+			if ($createUserMapResponse->isOK()) {
+				$flash_success = "Successfully created map";	
+			} else {
+				$flash_error = "Unable to create map at this time, please try again later.";
+			}
 	}
+} else {
+	$flash_error = "Unable to create map at this time, please try again later.";
 }
 
 ?>
@@ -51,12 +57,6 @@ if ($getMapResponse->isOK()) {
 </font>
 
 <?php
-
-  if ($flash_success) {
-	 
-  } else {
-	 
-  }
 
 endif;
 

@@ -4,6 +4,7 @@ if (!$user):
 	require_once 'logout.php';
 else:
 ?>
+
 <html>
  <head>
 <title>maps++ | Maps for IAS/IPS/IFS Exams</title>
@@ -371,8 +372,6 @@ function load()
 		});
 	});
 
-	
-  
 </script>
 </head>
 
@@ -383,27 +382,34 @@ function load()
 		Welcome, <?= $user_profile['name']?>
 		<a href=<?= $logoutUrl ?> >Logout</a>
 		<ul class='tabs'>
-		    <li><a href='#AddPlace'>Add</a></li>
-		    <li><a href='#BrowseMaps'>Search</a></li>
-		    <li><a href='#Practice'>Practice</a></li>
+		    <li><a href='#MapsTab'>Maps</a></li>
+		    <li><a href='#PracticeTab'>Practice</a></li>
 		</ul>
-		<div id='AddPlace'>
+		<div id='MapsTab'>
 		    <p>You can add places to new maps or the existing maps.</p>
-		    <div id="createMap">
-		    	<form id="createMapForm" action="createMap.php" method="post">
-		    		<input type="text" name="mapName" value="Name of the map" size=15/> <br>
-		    		<input type="text" name="mapDescription" value="Description of the map" size=40/>
-		    		<input type="submit" id="submitButton" value="Create Map"/>
-		    		<img src="static/images/ajax-loader.gif" style="visibility: hidden" id="createMapAjaxLoader"/>
+		    <div id="myMaps">
+		    	<form id="mapSearchForm" action="searchMap.php" method="post">
+		    		<fieldset>
+		    			<legend>List Maps</legend>
+		    			<input type="text" value="Name of the map" onblur='if(this.value=="") this.value="Name of the map";' onfocus='if(this.value=="Name of the map") this.value="";' size=15/>
+		    			<input type="submit" id="searchSubmitMap" value="follow"/>
+		    		</fieldset>
 		    	</form>
 		    </div>
-		    <div id="createMapResponse"></div>
-		    
+		    <div id="createMap">
+		    	<form id="createMapForm" action="createMap.php" method="post">
+		    	  <fieldset>
+		    	    <legend>Create Map</legend>
+		    		<input type="text" name="mapName"  value="Name of the map" onblur='if(this.value=="") this.value="Name of the map";' onfocus='if(this.value=="Name of the map") this.value="";' size=15/> <br>
+		    		<input type="text" name="mapDescription" value="Description of the map" onblur='if(this.value=="") this.value="Description of the map";' onfocus='if(this.value=="Description of the map") this.value="";' size=35/>
+		    		<input type="submit" id="submitButton" value="Create Map"/>
+		    		<img src="static/images/ajax-loader.gif" style="visibility: hidden" id="createMapAjaxLoader"/>
+		    	  </fieldset>
+		    	</form>
+		    	<div id="createMapResponse"></div>
+		    </div>
 		</div>
-		<div id='BrowseMaps'>
-		    <p>Search for maps and places here.</p>
-		</div>
-		<div id='Practice'>
+		<div id='PracticeTab'>
 		    <p>Take map practice here.</p>
 		</div>
 	</div>
