@@ -56,6 +56,9 @@ if ($getUserMapResponse->isOK()) {
 <font size="3" color=<?= ($flash_error) ? "red" : "green" ?>><?= ($flash_error ? $flash_error : $flash_success)?>
 </font>
 
+<? if (!$flash_error):  ?>
+	
+<? endif; ?>
 <?php
 
 endif;

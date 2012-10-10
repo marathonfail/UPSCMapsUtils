@@ -1,54 +1,92 @@
 <?php 
 require_once 'fbaccess.php';
 if (!$user):
-	require_once 'logout.php';
+require_once 'logout.php';
 else:
 ?>
 
 <html>
- <head>
+<head>
 <title>maps++ | Maps for IAS/IPS/IFS Exams</title>
 
- <style type="text/css">
- 			
-			.tabs li {
-				list-style:none;
-				display:inline;
-			}
+<style type="text/css">
+.tabs li {
+	list-style: none;
+	display: inline;
+}
 
-			.tabs a {
-				padding:5px 10px;
-				display:inline-block;
-				background:#666;
-				color:#fff;
-				text-decoration:none;
-			}
+.tabs a {
+	padding: 5px 10px;
+	display: inline-block;
+	background: #666;
+	color: #fff;
+	text-decoration: none;
+}
 
-			.tabs a.active {
-				background:#fff;
-				color:#000;
-			}
- </style>
- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
- 
- <script
+.tabs a.active {
+	background: #fff;
+	color: #000;
+}
+
+.myMapsTabsClass ul {
+	text-align: left;
+	list-style: none;
+	padding: 0;
+	margin: 0 auto;
+}
+
+.myMapsTabsClass li {
+	display: block;
+	margin: 0;
+	padding: 0;
+}
+
+.myMapsTabsClass li a {
+	display: block;
+	padding: 0.5em 0 0.5em 2em;
+	border-width: 1px;
+	border-color: #ffe #aaab9c #ccc #fff;
+	border-style: solid;
+	color: #777;
+	text-decoration: none;
+	background: #f7f2ea;
+}
+
+;
+.myMapsTabsClass li a.active {
+	background: transparent;
+	color: #800000;
+}
+
+.myMapsTabsClass li a:hover {
+	color: #800000;
+	background: transparent;
+	border-color: #aaab9c #fff #fff #ccc
+}
+</style>
+<script
+	src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+<script
 	src="http://maps.google.com/maps/api/js?key=AIzaSyByDaJQtdfxMBDxYRXVQqISAXCgCqSKul0&sensor=false"
 	type="text/javascript">
     </script>
- <script src="js/MarkerWithLabel.js" type="text/javascript"></script>
- 
- <style type="text/css">
-   .labels {
-     color: red;
-     background-color: white;
-     font-family: "Lucida Grande", "Arial", sans-serif;
-     font-size: 10px;
-     font-weight: bold;
-     text-align: center;
-     border: 2px solid black;
-     white-space: nowrap;
-   }
-  </style>
+<script src="js/MarkerWithLabel.js" type="text/javascript"></script>
+<script src="js/json-parse.js" type="text/javascript"></script>
+<script src="js/jquery-ui.js" type="text/javascript"></script>
+<link rel="stylesheet" href="static/css/jquery-ui.css"/>
+<style type="text/css">
+.labels {
+	color: red;
+	background-color: white;
+	font-family: "Lucida Grande", "Arial", sans-serif;
+	font-size: 10px;
+	font-weight: bold;
+	text-align: center;
+	border: 2px solid black;
+	white-space: nowrap;
+}
+</style>
 
 <script language="javascript" type="text/javascript">
  //<![CDATA[
@@ -58,6 +96,7 @@ else:
  var map;
  var currMarker;
  var placesMarked = [];
+ var outlineMapStyleOpts;
  
 function fillWindow(){
 	var mapDiv = document.getElementById("mapDiv");
@@ -79,21 +118,48 @@ function fillWindow(){
 	}
 }
 
+function reloadMap(name) {
+	var mapOptions = {
+			  mapTypeControl: true,
+			  mapTypeControlOptions: {
+				  mapTypeIds: ['outline', google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN],
+			      position: google.maps.ControlPosition.TOP_LEFT
+			  },
+	          center: new google.maps.LatLng(22.0, 81.0),
+	          zoom: 5,
+	          mapTypeId: 'outline'
+	        };
+	map = new google.maps.Map(document.getElementById("mapDiv"), mapOptions);
+	map.mapTypes.set('outline', new google.maps.StyledMapType(outlineMapStyleOpts, { name: name }));
+	currMarker = new google.maps.Marker({
+        position: map.getCenter(),
+        map: map
+      });
+  
+   google.maps.event.addListener(map, 'click', function(event) {
+      currMarker.setPosition(event.latLng);
+      currMarker.setVisible(true);
+      currMarker.setTitle("Click again to add details about the place");
+   });
+}
+
 
 function load()
 {
 	    fillWindow();
 	    
 		var mapOptions = {
+		  mapTypeControl: true,
 		  mapTypeControlOptions: {
-			  mapTypeIds: ['outline', google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN]
+			  mapTypeIds: ['outline', google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN],
+		      position: google.maps.ControlPosition.TOP_LEFT
 		  },
           center: new google.maps.LatLng(22.0, 81.0),
           zoom: 5,
           mapTypeId: 'outline'
         };
 
-        var outlineMapStyleOpts = [ 
+        outlineMapStyleOpts = [ 
                 { 
             	"featureType": "administrative", "elementType": "labels", "stylers": 
                 	[ { "visibility": "off" } ] 
@@ -219,9 +285,9 @@ function load()
    return places[selectedMap];
  }
  
- function loadPlaces() {
-   var selectMapOption = document.getElementById("sampleMapListDropDown");
-   var selectedMap = selectMapOption.options[selectMapOption.selectedIndex].value;
+ function loadPlaces(mapName) {
+   var selectedMap = mapName;
+   clearMap();
    if (placesMarked == null) {
     placesMarked = [];
    } else {
@@ -313,6 +379,45 @@ function load()
 	   showPlace();
   }
 
+  function loadNextSetOfMaps(lastProcessed) {
+	  $.get('listUserMaps.php', {lastProcessedMap: lastProcessed}, function(data) {
+			$("#myMapsAjaxLoader").remove();
+			var html = "";
+			var table="<table border=0>";
+			alert(data);
+			var jsonData = json_parse(data);
+			var listOfUserMaps = jsonData.maps;
+			var lastProcessed = "";
+			for (var i=0;i<listOfUserMaps.length;i++) {
+				table+="<tr>";
+				var mapName=listOfUserMaps[i].mapName[0];
+				var mapDescription = listOfUserMaps[i].mapDescription[0];
+				var td="<td style=\"width: 270px;\" onmouseout=\"this.style.background='transparent';\"  onmouseover=\"this.style.background='white'; this.style.cursor='pointer';\""
+					              +  " onclick=\"loadPlaces('"  + mapName + "')\">"	 + mapName + "<br> <font size=1><i>(" 
+								  + mapDescription + ")</i></font>" +  "</td>";
+				table+=td;
+				table+="</tr>";
+				lastProcessed = mapName;
+			}
+			table+="</table>";
+			html += table;
+			if (listOfUserMaps.length >= jsonData.maxMaps) {
+				html += "<button style=\"float: right;\" type=\"button\" onclick=\"loadNextSetOfMaps('" + lastProcessed + "')\">View more maps</button>";
+			}
+			if (listOfUserMaps.length == 0) {
+				html = "<font size=2><i>There are no more maps.</i></font>";
+			}
+			$("#myMaps").html(html);
+			$("myMaps").addClass("mapListClass");
+		});
+  }
+
+
+ function loadMap(mapName) {
+	 reloadMap(mapName);
+	 loadPlaces(mapName);
+ }
+
 
 
 //Wait until the DOM has loaded before querying the document
@@ -352,9 +457,45 @@ function load()
 			});
 		});
 
+		$.get('listUserMaps.php', function(data) {
+			$("#myMapsAjaxLoader").remove();
+			var html = "";
+			var table="<table border=0>";
+			var jsonData = json_parse(data);
+			var listOfUserMaps = jsonData.maps;
+			var lastProcessed = "";
+			for (var i=0;i<listOfUserMaps.length;i++) {
+				table+="<tr>";
+				var mapName=listOfUserMaps[i].mapName[0];
+				var mapDescription = listOfUserMaps[i].mapDescription[0];
+				var td="<td style=\"width: 270px;\" onmouseout=\"this.style.background='transparent';\"  onmouseover=\"this.style.background='white'; this.style.cursor='pointer';\""
+					              +  " onclick=\"loadMap('"  + mapName + "')\">"	 + mapName + "<br> <font size=1><i>(" 
+								  + mapDescription + ")</i></font>" +  "</td>";
+				table+=td;
+				table+="</tr>";
+				lastProcessed = mapName;
+			}
+			table+="</table>";
+			html += table;
+			if (listOfUserMaps.length >= jsonData.maxMaps) {
+				html += "<button style=\"float: right;\" type=\"button\" onclick=\"loadNextSetOfMaps('" + lastProcessed + "')\">View more maps</button>";
+			}
+			if (listOfUserMaps.length == 0) {
+				html = "<font size=2><i>There are no more maps.</i></font>";
+			}
+			$("#myMaps").html(html);
+			$("myMaps").addClass("mapListClass");
+		});
+
+		$("#mapSearch").autocomplete("listUserMaps.php", {
+			selectFirst: false,
+			matchContains: true,
+			delay: 50,
+			minChars: 2
+		});
+
 		// this is the id of the submit button
 		$("#submitButton").click(function() {
-
 		    var url = "createMap.php"; // the script where you handle the form input.
 			document.getElementById("createMapAjaxLoader").style.visibility='visible';
 		    $.ajax({
@@ -376,41 +517,55 @@ function load()
 </head>
 
 
-<body onload="load()" style="background-color: #D8D8D8" >
-    <div id="infoDiv"
+<body onload="load()" style="background-color: #D8D8D8">
+	<div id="infoDiv"
 		style="overflow: auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height: 100%;">
-		Welcome, <?= $user_profile['name']?>
-		<a href=<?= $logoutUrl ?> >Logout</a>
+		Welcome,
+		<?= $user_profile['name']?>
+		<a href=<?= $logoutUrl ?>>Logout</a>
 		<ul class='tabs'>
-		    <li><a href='#MapsTab'>Maps</a></li>
-		    <li><a href='#PracticeTab'>Practice</a></li>
+			<li><a href='#MapsTab'>Maps</a></li>
+			<li><a href='#PracticeTab'>Practice</a></li>
 		</ul>
 		<div id='MapsTab'>
-		    <p>You can add places to new maps or the existing maps.</p>
-		    <div id="myMaps">
-		    	<form id="mapSearchForm" action="searchMap.php" method="post">
-		    		<fieldset>
-		    			<legend>List Maps</legend>
-		    			<input type="text" value="Name of the map" onblur='if(this.value=="") this.value="Name of the map";' onfocus='if(this.value=="Name of the map") this.value="";' size=15/>
-		    			<input type="submit" id="searchSubmitMap" value="follow"/>
-		    		</fieldset>
-		    	</form>
-		    </div>
-		    <div id="createMap">
-		    	<form id="createMapForm" action="createMap.php" method="post">
-		    	  <fieldset>
-		    	    <legend>Create Map</legend>
-		    		<input type="text" name="mapName"  value="Name of the map" onblur='if(this.value=="") this.value="Name of the map";' onfocus='if(this.value=="Name of the map") this.value="";' size=15/> <br>
-		    		<input type="text" name="mapDescription" value="Description of the map" onblur='if(this.value=="") this.value="Description of the map";' onfocus='if(this.value=="Description of the map") this.value="";' size=35/>
-		    		<input type="submit" id="submitButton" value="Create Map"/>
-		    		<img src="static/images/ajax-loader.gif" style="visibility: hidden" id="createMapAjaxLoader"/>
-		    	  </fieldset>
-		    	</form>
-		    	<div id="createMapResponse"></div>
-		    </div>
+			<p>You can add places to new maps or the existing maps.</p>
+			<div id="mapSearch">
+				    <div class="ui-widget">
+    					<label for="mapSearch">Map Name</label>
+    					<input id="mapSearch" />
+					</div>
+					<label>Search Maps</label> <input type="text"
+						value="Name of the map"
+						onblur='if(this.value=="") this.value="Name of the map";'
+						onfocus='if(this.value=="Name of the map") this.value="";' size=15 />
+					<input type="submit" id="searchSubmitMap" value="Search" />
+				</form>
+			</div>
+			<div id="myMaps">
+				<img src="static/images/ajax-loader.gif" id="myMapsAjaxLoader" />
+			</div>
+			<div id="myMapsTabsList"></div>
+			<div id="createMap">
+				<form id="createMapForm" action="createMap.php" method="post">
+					<fieldset>
+						<legend>Create Map</legend>
+						<input type="text" name="mapName" value="Name of the map"
+							onblur='if(this.value=="") this.value="Name of the map";'
+							onfocus='if(this.value=="Name of the map") this.value="";'
+							size=15 /> <br> <input type="text" name="mapDescription"
+							value="Description of the map"
+							onblur='if(this.value=="") this.value="Description of the map";'
+							onfocus='if(this.value=="Description of the map") this.value="";'
+							size=35 /> <input type="submit" id="submitButton"
+							value="Create Map" /> <img src="static/images/ajax-loader.gif"
+							style="visibility: hidden" id="createMapAjaxLoader" />
+					</fieldset>
+				</form>
+				<div id="createMapResponse"></div>
+			</div>
 		</div>
 		<div id='PracticeTab'>
-		    <p>Take map practice here.</p>
+			<p>Take map practice here.</p>
 		</div>
 	</div>
 	<div id="mapDiv"
