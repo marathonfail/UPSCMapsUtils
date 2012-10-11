@@ -65,7 +65,7 @@ else:
 }
 </style>
 <script
-	src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	src="js/jquery-1.8.2.js"></script>
 
 <script
 	src="http://maps.google.com/maps/api/js?key=AIzaSyByDaJQtdfxMBDxYRXVQqISAXCgCqSKul0&sensor=false"
@@ -73,8 +73,8 @@ else:
     </script>
 <script src="js/MarkerWithLabel.js" type="text/javascript"></script>
 <script src="js/json-parse.js" type="text/javascript"></script>
-<script src="js/jquery-ui.js" type="text/javascript"></script>
-<link rel="stylesheet" href="static/css/jquery-ui.css"/>
+<script src="js/jquery-ui-1.9.0.custom.min.js" type="text/javascript"></script>
+<link rel="stylesheet" href="static/css/jquery-ui-1.9.0.custom.min.css"/>
 <style type="text/css">
 .labels {
 	color: red;
@@ -380,42 +380,46 @@ function load()
   }
 
   function loadNextSetOfMaps(lastProcessed) {
+	  $("#myMapsAjaxLoader").show();
 	  $.get('listUserMaps.php', {lastProcessedMap: lastProcessed}, function(data) {
-			$("#myMapsAjaxLoader").remove();
-			var html = "";
-			var table="<table border=0>";
-			alert(data);
-			var jsonData = json_parse(data);
-			var listOfUserMaps = jsonData.maps;
-			var lastProcessed = "";
-			for (var i=0;i<listOfUserMaps.length;i++) {
-				table+="<tr>";
-				var mapName=listOfUserMaps[i].mapName[0];
-				var mapDescription = listOfUserMaps[i].mapDescription[0];
-				var td="<td style=\"width: 270px;\" onmouseout=\"this.style.background='transparent';\"  onmouseover=\"this.style.background='white'; this.style.cursor='pointer';\""
-					              +  " onclick=\"loadPlaces('"  + mapName + "')\">"	 + mapName + "<br> <font size=1><i>(" 
-								  + mapDescription + ")</i></font>" +  "</td>";
-				table+=td;
-				table+="</tr>";
-				lastProcessed = mapName;
-			}
-			table+="</table>";
-			html += table;
-			if (listOfUserMaps.length >= jsonData.maxMaps) {
-				html += "<button style=\"float: right;\" type=\"button\" onclick=\"loadNextSetOfMaps('" + lastProcessed + "')\">View more maps</button>";
-			}
-			if (listOfUserMaps.length == 0) {
-				html = "<font size=2><i>There are no more maps.</i></font>";
-			}
-			$("#myMaps").html(html);
-			$("myMaps").addClass("mapListClass");
-		});
+		  parseAndFillDocument(data);
+	  });
   }
 
 
  function loadMap(mapName) {
 	 reloadMap(mapName);
 	 loadPlaces(mapName);
+ }
+
+ function parseAndFillDocument(data) {
+	 	$("#myMapsAjaxLoader").hide();
+		var html = "";
+		var table="<table border=0>";
+		var jsonData = json_parse(data);
+		var listOfUserMaps = jsonData.maps;
+		var lastProcessed = "";
+		for (var i=0;i<listOfUserMaps.length;i++) {
+			table+="<tr>";
+			var mapName=listOfUserMaps[i].mapName[0];
+			var mapDescription = listOfUserMaps[i].mapDescription[0];
+			var td="<td style=\"width: 270px;\" onmouseout=\"this.style.background='transparent';\"  onmouseover=\"this.style.background='white'; this.style.cursor='pointer';\""
+				              +  " onclick=\"loadMap('"  + mapName + "')\">"	 + mapName + "<br> <font size=1><i>(" 
+							  + mapDescription + ")</i></font>" +  "</td>";
+			table+=td;
+			table+="</tr>";
+			lastProcessed = mapName;
+		}
+		table+="</table>";
+		html += table;
+		if (listOfUserMaps.length >= jsonData.maxMaps) {
+			html += "<button style=\"float: right;\" type=\"button\" onclick=\"loadNextSetOfMaps('" + lastProcessed + "')\">View more maps</button>";
+		}
+		if (listOfUserMaps.length == 0) {
+			html = "<font size=2><i>There are no more maps.</i></font>";
+		}
+		$("#myMaps").html(html);
+		$("myMaps").addClass("mapListClass");
  }
 
 
@@ -458,40 +462,7 @@ function load()
 		});
 
 		$.get('listUserMaps.php', function(data) {
-			$("#myMapsAjaxLoader").remove();
-			var html = "";
-			var table="<table border=0>";
-			var jsonData = json_parse(data);
-			var listOfUserMaps = jsonData.maps;
-			var lastProcessed = "";
-			for (var i=0;i<listOfUserMaps.length;i++) {
-				table+="<tr>";
-				var mapName=listOfUserMaps[i].mapName[0];
-				var mapDescription = listOfUserMaps[i].mapDescription[0];
-				var td="<td style=\"width: 270px;\" onmouseout=\"this.style.background='transparent';\"  onmouseover=\"this.style.background='white'; this.style.cursor='pointer';\""
-					              +  " onclick=\"loadMap('"  + mapName + "')\">"	 + mapName + "<br> <font size=1><i>(" 
-								  + mapDescription + ")</i></font>" +  "</td>";
-				table+=td;
-				table+="</tr>";
-				lastProcessed = mapName;
-			}
-			table+="</table>";
-			html += table;
-			if (listOfUserMaps.length >= jsonData.maxMaps) {
-				html += "<button style=\"float: right;\" type=\"button\" onclick=\"loadNextSetOfMaps('" + lastProcessed + "')\">View more maps</button>";
-			}
-			if (listOfUserMaps.length == 0) {
-				html = "<font size=2><i>There are no more maps.</i></font>";
-			}
-			$("#myMaps").html(html);
-			$("myMaps").addClass("mapListClass");
-		});
-
-		$("#mapSearch").autocomplete("listUserMaps.php", {
-			selectFirst: false,
-			matchContains: true,
-			delay: 50,
-			minChars: 2
+			parseAndFillDocument(data);
 		});
 
 		// this is the id of the submit button
@@ -510,6 +481,16 @@ function load()
 	         });
 
 		    return false; // avoid to execute the actual submit of the form.
+		});
+
+		$("#mapSearchInput").keypress(function(){
+			var searchInput = document.getElementById("mapSearchInput").value;
+			if (searchInput.length >= 2){
+				 $("#myMapsAjaxLoader").show();
+				 $.get('listUserMaps.php', {query: searchInput}, function(data) {
+					  parseAndFillDocument(data);
+				 });
+			}
 		});
 	});
 
@@ -530,19 +511,12 @@ function load()
 		<div id='MapsTab'>
 			<p>You can add places to new maps or the existing maps.</p>
 			<div id="mapSearch">
-				    <div class="ui-widget">
-    					<label for="mapSearch">Map Name</label>
-    					<input id="mapSearch" />
-					</div>
-					<label>Search Maps</label> <input type="text"
-						value="Name of the map"
-						onblur='if(this.value=="") this.value="Name of the map";'
-						onfocus='if(this.value=="Name of the map") this.value="";' size=15 />
-					<input type="submit" id="searchSubmitMap" value="Search" />
-				</form>
+    			<label for="mapSearchInput">Search</label>
+    			<input type="text" id="mapSearchInput"/>
+    			<div id="mapSearchOutputDiv"></div>
 			</div>
+			<img src="static/images/ajax-loader.gif" id="myMapsAjaxLoader" />
 			<div id="myMaps">
-				<img src="static/images/ajax-loader.gif" id="myMapsAjaxLoader" />
 			</div>
 			<div id="myMapsTabsList"></div>
 			<div id="createMap">

@@ -17,8 +17,20 @@ else {
 	}
 	
 	$query = NULL;
-	if (isset($_GET["q"])) {
-		$query = $_GET["q"];
+	if (isset($_GET["query"])) {
+		$query = $_GET["query"];
+	}
+	
+	$rangeConditions = NULL;
+	
+	if ($query) {
+		$rangeConditions=array("ComparisonOperator" => AmazonDynamoDB::CONDITION_BEGINS_WITH,
+				"AttributeValueList" => array(array(AmazonDynamoDB::TYPE_STRING => $query)));
+	}
+	
+	if ($lastMap) {
+		$rangeConditions = array("ComparisonOperator" => AmazonDynamoDB::CONDITION_GREATER_THAN,
+				"AttributeValueList" => array(array(AmazonDynamoDB::TYPE_STRING => $lastMap)));
 	}
 	
 	if ($query) {
@@ -28,32 +40,31 @@ else {
 				"HashKeyValue" => array(
 						AmazonDynamoDB::TYPE_NUMBER => $user
 				),
-				"RangeKeyCondition" => array(
-						"ComparisonOperator" => AmazonDynamoDB::CONDITION_GREATER_THAN,
-						"AttributeValueList" => array(
-								array(AmazonDynamoDB::TYPE_STRING => $lastMap)
-						)
-				),
+				"RangeKeyCondition" => $rangeConditions,
+				"Limit" => $maxMaps
 		));
 		if ($listUserMapsResponse->isOK()) {
+			$result = array();
 			foreach ($listUserMapsResponse->body->Items as $item) {
-				echo $item->MapName->{AmazonDynamoDB::TYPE_STRING}."\n";
+				$mapName = $item->MapName->{AmazonDynamoDB::TYPE_STRING};
+				$mapDescription = $item->mapDescription->{AmazonDynamoDB::TYPE_STRING};
+				if ($mapName) {
+					$mapArray[] = array("mapName" => $mapName,
+										"mapDescription" => $mapDescription);
+				}
 			}
+			$result=array("maps" => $mapArray, "maxMaps" => $maxMaps);
+			echo json_encode($result);
 		}
  	} else {
-	
 		if ($lastMap) {
 			$listUserMapsResponse = $dynamo->query(array(
 				"TableName"    => "MapPlusPlusUserMaps",
 				"HashKeyValue" => array(
 						AmazonDynamoDB::TYPE_NUMBER => $user
 				),
-				"RangeKeyCondition" => array(
-						"ComparisonOperator" => AmazonDynamoDB::CONDITION_GREATER_THAN,
-						"AttributeValueList" => array(
-								array(AmazonDynamoDB::TYPE_STRING => $lastMap)
-						)
-				),
+				"RangeKeyCondition" => $rangeConditions,
+				"Limit" => $maxMaps
 			));
 		} else {
 			$listUserMapsResponse = $dynamo->query(array(
@@ -61,6 +72,7 @@ else {
 					"HashKeyValue" => array(
 							AmazonDynamoDB::TYPE_NUMBER => $user
 					),
+					"Limit" => $maxMaps
 			));
 		}
 		
