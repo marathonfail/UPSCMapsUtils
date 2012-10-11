@@ -105,6 +105,7 @@ else:
 //Globals
  //initialise the map 
  var map;
+ var currentMapName;
  var currMarker;
  var placesMarked = [];
  var outlineMapStyleOpts;
@@ -147,11 +148,17 @@ function reloadMap(name) {
         position: map.getCenter(),
         map: map
       });
-  
+    currentMapName = name;
    google.maps.event.addListener(map, 'click', function(event) {
       currMarker.setPosition(event.latLng);
       currMarker.setVisible(true);
       currMarker.setTitle("Click again to add details about the place");
+   });
+   google.maps.event.addListener(currMarker, 'click', function(event) {
+	   var infowindow = new google.maps.InfoWindow({
+		    content: "This functionality is coming soon.. "
+		});
+		infowindow.open(map, currMarker);
    });
 }
 
@@ -207,9 +214,12 @@ function load()
 	        currMarker.setTitle("Click again to add details about the place");
 	     });
 	     
-	     google.maps.event.addListener(currMarker, 'click', function(event) {
-	        
-	     }); 
+	    google.maps.event.addListener(currMarker, 'click', function(event) {
+	 	   var infowindow = new google.maps.InfoWindow({
+	 		    content: "Hello"
+	 		});
+	 		infowindow.open();
+	    });
  }
  
  function clearMap() {
@@ -404,19 +414,29 @@ function load()
 	 loadPlaces(mapName);
  }
 
+ function replaceAll(string, replace, wit) {
+	 var result = "";
+	 for(var i=0;i<string.length;i++) {
+		 if (string[i]==replace[0]) result += wit;
+		 else result += string[i]; 
+	 }
+	 return result;
+ }
+
  function getTr(userMapName, userMapDescription) {
+	 var moddedUserName=replaceAll(userMapName, " ", ",");
 	 var tr = "<tr><td style=\"width: 270px;\" onmouseout=\"this.style.background='transparent';\"  onmouseover=\"this.style.background='white'; this.style.cursor='pointer';\""
      +  " onclick=\"loadMap('"  + userMapName + "')\">"	 + userMapName + "<br> <font size=1><i>(" 
 	  + userMapDescription + ")</i></font>" +  "</td></tr>";
 	  return tr;
  }
 
- function addMapToList(userMap, args) {
+ function addMapToList(userMapName, userMapDescription, args) {
 	 if (document.getElementById("myMapsList")) {
-		 $("#myMapsList tbody").append(getTr(userMap.mapName, userMap.mapDescription));
+		 $("#myMapsList tbody").append(getTr(userMapName, userMapDescription));
 	 } else {
 		var table="<table id=\"myMapsList\" border=0>";
-		table += getTr(userMap.mapName, userMap.mapDescription);
+		table += getTr(userMapName, userMapDescription);
 		table+="</table>";
 		$("#myMaps").html(table);
 	 }
@@ -501,7 +521,7 @@ function load()
 
 		$("#mapSearchInput").keypress(function(){
 			var searchInput = document.getElementById("mapSearchInput").value;
-			if (searchInput.length >= 2){
+			if (searchInput.length >= 2 && searchInput.length%2 == 0) {
 				 $("#myMapsAjaxLoader").show();
 				 var available = false;
 				 $.get('listUserMaps.php', {query: searchInput}, function(data) {
@@ -552,15 +572,16 @@ function load()
 	           {
 		           jsonData = json_parse(data);
 		           var message = "";
-		           if (jsonData.resultCode == 400 || jsonData.resultCode == 500) {
+		           if (jsonData.resultCode == 500) {
 			           // error
 			           message = "<font size=3 color=red>" + jsonData.error + "</font>";
 		           } else {
 			           message = "<font size=3 color=green>" + jsonData.success + "</font>";
+			           addMapToList(jsonData.map[0].mapName[0], jsonData.map[1].mapDescription[0]);
+		               reloadMap(jsonData.map[0].mapName[0]);
 		           }
 		           
 	               $("#createMapResponse").html(message); // show response from the php script.
-	               addMapToList(jsonData.map);
 	               $("#transparentDiv").hide();
 	               modalId = null;
 	           }
@@ -582,7 +603,6 @@ function load()
 			<li><a href='#PracticeTab'>Practice</a></li>
 		</ul>
 		<div id='MapsTab'>
-			<p>You can add places to new maps or the existing maps.</p>
 			<div id="mapSearch">
     			<label for="mapSearchInput">Search</label>
     			<input type="text" id="mapSearchInput"/>
@@ -592,10 +612,9 @@ function load()
     		<div id="createMapOverlay"></div>
     		<div id="createMapResponse"></div>
 			<div id="myMaps"></div>
-			<div id="myMapsTabsList"></div>
 		</div>
 		<div id='PracticeTab'>
-			<p>Take map practice here.</p>
+			<p>Coming Soon..</p>
 		</div>
 	</div>
 	<div id="mapDiv"

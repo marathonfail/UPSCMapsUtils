@@ -25,7 +25,7 @@ $getUserMapResponse = $dynamo->get_item(array(
 				'HashKeyElement' => $userNum,
 				'RangeKeyElement' => $mapName,
 		)),
-		"AttributesToGet" => array("UserId", "MapName"),
+		"AttributesToGet" => array("UserId", "MapName", "originalName", "mapDescription"),
 )
 );
 
@@ -34,9 +34,10 @@ $resultCode = 200;
 if ($getUserMapResponse->isOK()) {
 	$userMapItem = $getUserMapResponse->body->Item;
 	if ($userMapItem) {
-		
-		$flash_error = "Map with the given name already exists, try with a different name";
+		$flash_success = "Map with the given name already exists";
 		$resultCode = 400;
+		$originalName = $userMapItem->originalName->{AmazonDynamoDB::TYPE_STRING};
+		$mapDescription = $userMapItem->mapDescription->{AmazonDynamoDB::TYPE_STRING};
 		// map already exists, show other options.
 	} else {
 			$createUserMapResponse = $dynamo->put_item(array(
@@ -65,18 +66,19 @@ if ($getUserMapResponse->isOK()) {
 }
 
 $result = array();
-if ($resultCode == 500 || $resultCode == 400) {
+if ($resultCode == 500 ) {
 	$result = array(
 				"error" => $flash_error,
 				"resultCode" => $resultCode
 			);
-} else {
+}
+if ($resultCode == 400 || $resultCode == 200) {
 	$result = array(
 				"success" => $flash_success,
 			    "resultCode" => $resultCode,
 				"map" => array(
-							"mapName" => $originalName,
-							"mapDescription" => $mapDescription
+							array("mapName" => $originalName),
+							array("mapDescription" => $mapDescription)
 						)
 			);
 }
