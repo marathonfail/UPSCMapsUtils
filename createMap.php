@@ -11,9 +11,13 @@ else:
 $flash_success = NULL;
 $flash_error = NULL; 
 
-$userNum = intval($user);
 date_default_timezone_set('Asia/Kolkata');
 $date = date('Y/m/d h:i:s a', time());
+
+$originalName = $mapName;
+$mapName = strtolower($mapName);
+$mapName = trim($mapName);
+$mapName = str_replace(" ", ".", $mapName);
 
 $getUserMapResponse = $dynamo->get_item(array(
 		"TableName" => "MapPlusPlusUserMaps",
@@ -24,11 +28,16 @@ $getUserMapResponse = $dynamo->get_item(array(
 		"AttributesToGet" => array("UserId", "MapName"),
 )
 );
+
+$resultCode = 200;
+
 if ($getUserMapResponse->isOK()) {
 	$userMapItem = $getUserMapResponse->body->Item;
 	if ($userMapItem) {
+		
 		$flash_error = "Map with the given name already exists, try with a different name";
-		// map already exists, show him other options.
+		$resultCode = 400;
+		// map already exists, show other options.
 	} else {
 			$createUserMapResponse = $dynamo->put_item(array(
 					"TableName" => "MapPlusPlusUserMaps",
@@ -36,6 +45,8 @@ if ($getUserMapResponse->isOK()) {
 							"UserId" => $userNum,
 							"MapName" => $mapName,
 							"mapDescription" => $mapDescription,
+							"originalName" => $originalName,
+							"totalPlaces" => 0,
 							"createdBy" => $user,
 							"creationDate" => $date
 					))
@@ -45,22 +56,30 @@ if ($getUserMapResponse->isOK()) {
 				$flash_success = "Successfully created map";	
 			} else {
 				$flash_error = "Unable to create map at this time, please try again later.";
+				$resultCode = 500;
 			}
 	}
 } else {
 	$flash_error = "Unable to create map at this time, please try again later.";
+	$resultCode = 500;
 }
 
-?>
-
-<font size="3" color=<?= ($flash_error) ? "red" : "green" ?>><?= ($flash_error ? $flash_error : $flash_success)?>
-</font>
-
-<? if (!$flash_error):  ?>
-	
-<? endif; ?>
-<?php
-
+$result = array();
+if ($resultCode == 500 || $resultCode == 400) {
+	$result = array(
+				"error" => $flash_error,
+				"resultCode" => $resultCode
+			);
+} else {
+	$result = array(
+				"success" => $flash_success,
+			    "resultCode" => $resultCode,
+				"map" => array(
+							"mapName" => $originalName,
+							"mapDescription" => $mapDescription
+						)
+			);
+}
+echo json_encode($result);
 endif;
-
 ?>

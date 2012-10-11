@@ -86,6 +86,17 @@ else:
 	border: 2px solid black;
 	white-space: nowrap;
 }
+
+.createMapOverlayClass {
+     position: absolute;
+     left: 30px;
+     top: 165px;
+     width: 30%;
+     height:20%;
+     text-align:left;
+     background-color: white;
+}
+
 </style>
 
 <script language="javascript" type="text/javascript">
@@ -97,6 +108,7 @@ else:
  var currMarker;
  var placesMarked = [];
  var outlineMapStyleOpts;
+ var modalId; // Id of open modal window.
  
 function fillWindow(){
 	var mapDiv = document.getElementById("mapDiv");
@@ -382,7 +394,7 @@ function load()
   function loadNextSetOfMaps(lastProcessed) {
 	  $("#myMapsAjaxLoader").show();
 	  $.get('listUserMaps.php', {lastProcessedMap: lastProcessed}, function(data) {
-		  parseAndFillDocument(data);
+		  parseAndFillDocument(data, {});
 	  });
   }
 
@@ -392,22 +404,43 @@ function load()
 	 loadPlaces(mapName);
  }
 
- function parseAndFillDocument(data) {
+ function getTr(userMapName, userMapDescription) {
+	 var tr = "<tr><td style=\"width: 270px;\" onmouseout=\"this.style.background='transparent';\"  onmouseover=\"this.style.background='white'; this.style.cursor='pointer';\""
+     +  " onclick=\"loadMap('"  + userMapName + "')\">"	 + userMapName + "<br> <font size=1><i>(" 
+	  + userMapDescription + ")</i></font>" +  "</td></tr>";
+	  return tr;
+ }
+
+ function addMapToList(userMap, args) {
+	 if (document.getElementById("myMapsList")) {
+		 $("#myMapsList tbody").append(getTr(userMap.mapName, userMap.mapDescription));
+	 } else {
+		var table="<table id=\"myMapsList\" border=0>";
+		table += getTr(userMap.mapName, userMap.mapDescription);
+		table+="</table>";
+		$("#myMaps").html(table);
+	 }
+ }
+
+ function parseAndFillDocument(data, args) {
+	    var available = false;
 	 	$("#myMapsAjaxLoader").hide();
 		var html = "";
-		var table="<table border=0>";
+		var table="<table id=\"myMapsList\" border=0>";
 		var jsonData = json_parse(data);
+		var matchStr = null;
+		if (args["matchStr"]) {
+			matchStr = args["matchStr"]; 
+		}
 		var listOfUserMaps = jsonData.maps;
 		var lastProcessed = "";
 		for (var i=0;i<listOfUserMaps.length;i++) {
-			table+="<tr>";
 			var mapName=listOfUserMaps[i].mapName[0];
+			if (mapName == matchStr) {
+				available = true;
+			}
 			var mapDescription = listOfUserMaps[i].mapDescription[0];
-			var td="<td style=\"width: 270px;\" onmouseout=\"this.style.background='transparent';\"  onmouseover=\"this.style.background='white'; this.style.cursor='pointer';\""
-				              +  " onclick=\"loadMap('"  + mapName + "')\">"	 + mapName + "<br> <font size=1><i>(" 
-							  + mapDescription + ")</i></font>" +  "</td>";
-			table+=td;
-			table+="</tr>";
+			table+=getTr(mapName, mapDescription);;
 			lastProcessed = mapName;
 		}
 		table+="</table>";
@@ -419,7 +452,8 @@ function load()
 			html = "<font size=2><i>There are no more maps.</i></font>";
 		}
 		$("#myMaps").html(html);
-		$("myMaps").addClass("mapListClass");
+		//$("#myMaps").addClass("mapListClass");
+		return available;
  }
 
 
@@ -462,43 +496,82 @@ function load()
 		});
 
 		$.get('listUserMaps.php', function(data) {
-			parseAndFillDocument(data);
-		});
-
-		// this is the id of the submit button
-		$("#submitButton").click(function() {
-		    var url = "createMap.php"; // the script where you handle the form input.
-			document.getElementById("createMapAjaxLoader").style.visibility='visible';
-		    $.ajax({
-		           type: "POST",
-		           url: url,
-		           data: $("#createMapForm").serialize(), // serializes the form's elements.
-		           success: function(data)
-		           {
-		        	   document.getElementById("createMapAjaxLoader").style.visibility='hidden';
-		               document.getElementById("createMapResponse").innerHTML = data; // show response from the php script.
-		           }
-	         });
-
-		    return false; // avoid to execute the actual submit of the form.
+			parseAndFillDocument(data, {});
 		});
 
 		$("#mapSearchInput").keypress(function(){
 			var searchInput = document.getElementById("mapSearchInput").value;
 			if (searchInput.length >= 2){
 				 $("#myMapsAjaxLoader").show();
+				 var available = false;
 				 $.get('listUserMaps.php', {query: searchInput}, function(data) {
-					  parseAndFillDocument(data);
+					  available = parseAndFillDocument(data, {});
 				 });
+				 if (!available) {
+					 var html="<font size=2><i>This map is not available. <a onclick=\"createMapWithDescription()\" href=\"#\">Create this map</a></i></font>";
+					 $("#mapSearchOutputDiv").html(html);
+				 } else {
+					 $("#mapSearchOutputDiv").html("");
+				 }
 			}
 		});
+
+		$(document).keyup(function(e){
+            if(e.keyCode == 27){
+                if (modalId != null) {
+                    $("#transparentDiv").hide();
+                    modalId=null;
+                }
+            }
+        });
 	});
+
+	function createMapWithDescription() {
+		var createMapOverlayHtml = "";
+		mapSearchInput = document.getElementById("mapSearchInput").value;
+		createMapOverlayHtml += "<form id=\"createMapOverlayForm\"><fieldset><legend>Create Map</legend>";
+		createMapOverlayHtml += "<label>Map Name</label><input type=\"text\" name=\"mapName\" value=\"" + mapSearchInput + "\"/><br>";
+		createMapOverlayHtml += "<label>Description</label><input type=\"text\" name=\"mapDescription\"/>";
+		createMapOverlayHtml += "<input type=\"submit\" onClick=\"return createMap()\" id=\"createMapSubmitButton\" name=\"Create Map\"/></fieldset></form>";
+		createMapOverlayHtml += "[Press Esc to go back]";
+		createMapOverlayHtml += "<img src=\"static/images/ajax-loader.gif\" style=\"visibility: hidden\" id=\"createMapAjaxLoader\" />";
+		$("#modalDiv").html(createMapOverlayHtml);
+		$("#modalDiv").attr("class", "createMapOverlayClass");
+		$("#transparentDiv").show();
+		modalId = "modalDiv";
+	}
+
+	function createMap() {
+		var url = "createMap.php"; // the script where you handle the form input.
+		document.getElementById("createMapAjaxLoader").style.visibility='visible';
+	    $.ajax({
+	           type: "POST",
+	           url: url,
+	           data: $("#createMapOverlayForm").serialize(), // serializes the form's elements.
+	           success: function(data)
+	           {
+		           jsonData = json_parse(data);
+		           var message = "";
+		           if (jsonData.resultCode == 400 || jsonData.resultCode == 500) {
+			           // error
+			           message = "<font size=3 color=red>" + jsonData.error + "</font>";
+		           } else {
+			           message = "<font size=3 color=green>" + jsonData.success + "</font>";
+		           }
+		           
+	               $("#createMapResponse").html(message); // show response from the php script.
+	               addMapToList(jsonData.map);
+	               $("#transparentDiv").hide();
+	               modalId = null;
+	           }
+         });
+        return false;
+	}
 
 </script>
 </head>
 
-
-<body onload="load()" style="background-color: #D8D8D8">
+<body onload="load()" style="background-color: #D8D8D8; height: 100%; margin: 0; padding: 0;">
 	<div id="infoDiv"
 		style="overflow: auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height: 100%;">
 		Welcome,
@@ -513,30 +586,13 @@ function load()
 			<div id="mapSearch">
     			<label for="mapSearchInput">Search</label>
     			<input type="text" id="mapSearchInput"/>
-    			<div id="mapSearchOutputDiv"></div>
-			</div>
-			<img src="static/images/ajax-loader.gif" id="myMapsAjaxLoader" />
-			<div id="myMaps">
-			</div>
+    			<img src="static/images/ajax-loader.gif" id="myMapsAjaxLoader" />
+    		</div>
+    		<div id="mapSearchOutputDiv"></div>
+    		<div id="createMapOverlay"></div>
+    		<div id="createMapResponse"></div>
+			<div id="myMaps"></div>
 			<div id="myMapsTabsList"></div>
-			<div id="createMap">
-				<form id="createMapForm" action="createMap.php" method="post">
-					<fieldset>
-						<legend>Create Map</legend>
-						<input type="text" name="mapName" value="Name of the map"
-							onblur='if(this.value=="") this.value="Name of the map";'
-							onfocus='if(this.value=="Name of the map") this.value="";'
-							size=15 /> <br> <input type="text" name="mapDescription"
-							value="Description of the map"
-							onblur='if(this.value=="") this.value="Description of the map";'
-							onfocus='if(this.value=="Description of the map") this.value="";'
-							size=35 /> <input type="submit" id="submitButton"
-							value="Create Map" /> <img src="static/images/ajax-loader.gif"
-							style="visibility: hidden" id="createMapAjaxLoader" />
-					</fieldset>
-				</form>
-				<div id="createMapResponse"></div>
-			</div>
 		</div>
 		<div id='PracticeTab'>
 			<p>Take map practice here.</p>
@@ -544,6 +600,11 @@ function load()
 	</div>
 	<div id="mapDiv"
 		style="position: absolute; left: 300px; top: 0px; height: 100%"></div>
+	
+	<div id="transparentDiv" style="display: none; background: transparent; position: absolute; left: 0px; top: 0px; height:100%; width: 100%">
+		<div id="modalDiv">
+		</div>
+	</div>
 
 </body>
 

@@ -14,11 +14,17 @@ else {
 	
 	if (isset($_GET["lastProcessedMap"])) {
 		$lastMap = $_GET["lastProcessedMap"];
+		$lastMap = strtolower($lastMap);
+		$lastMap = trim($lastMap);
+		$lastMap = str_replace(" ", ".", $lastMap);
 	}
 	
 	$query = NULL;
 	if (isset($_GET["query"])) {
 		$query = $_GET["query"];
+		$query = strtolower($query);
+		$query = trim($query);
+		$query = str_replace(" ", ".", $query);
 	}
 	
 	$rangeConditions = NULL;
@@ -46,7 +52,7 @@ else {
 		if ($listUserMapsResponse->isOK()) {
 			$result = array();
 			foreach ($listUserMapsResponse->body->Items as $item) {
-				$mapName = $item->MapName->{AmazonDynamoDB::TYPE_STRING};
+				$mapName = $item->originalName->{AmazonDynamoDB::TYPE_STRING};
 				$mapDescription = $item->mapDescription->{AmazonDynamoDB::TYPE_STRING};
 				if ($mapName) {
 					$mapArray[] = array("mapName" => $mapName,
@@ -80,7 +86,7 @@ else {
 		$mapArray=array();
 		if ($listUserMapsResponse->isOK()) {
 			foreach ($listUserMapsResponse->body->Items as $item) {
-				$mapName = $item->MapName->{AmazonDynamoDB::TYPE_STRING};
+				$mapName = $item->originalName->{AmazonDynamoDB::TYPE_STRING};
 				$mapDescription = $item->mapDescription->{AmazonDynamoDB::TYPE_STRING};
 				if ($mapName) {
 					$mapArray[] = array("mapName" => $mapName,
