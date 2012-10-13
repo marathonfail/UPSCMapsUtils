@@ -134,9 +134,9 @@ function fillWindow() {
 
 function reloadMap(name) {
 	var mapOptions = {
-			  mapTypeControl: true,
+			  mapTypeControl: false,
 			  mapTypeControlOptions: {
-				  mapTypeIds: ['outline', google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN],
+				  mapTypeIds: ['outline'],
 			      position: google.maps.ControlPosition.TOP_LEFT
 			  },
 	          center: new google.maps.LatLng(22.0, 81.0),
@@ -591,8 +591,8 @@ function load()
 			           message = "<font size=3 color=red>" + jsonData.error + "</font>";
 		           } else {
 			           message = "<font size=3 color=green>" + jsonData.success + "</font>";
-			           addMapToList(jsonData.map[0].mapName[0], jsonData.map[1].mapDescription[0]);
-		               reloadMap(jsonData.map[0].mapName[0]);
+			           addMapToList(jsonData.map[0].mapName, jsonData.map[1].mapDescription);
+		               reloadMap(jsonData.map[0].mapName);
 		           }
 		           
 	               $("#createMapResponse").html(message); // show response from the php script.

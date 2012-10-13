@@ -5,4 +5,3 @@ if (!$user) {
 	include_once 'home.php';
 }
 ?>
-
