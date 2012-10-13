@@ -6,9 +6,6 @@ $app_id		= $fb_app_id;
 $app_secret	= $fb_secret_id;
 $site_url	= $url;
 
-$awsAccessId = "AKIAI73JNSH4BLSH3EEA";
-$awsSecretKey = "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";
-
 include_once 'vendor/facebook/src/facebook.php';
 include_once 'vendor/amazonwebservices/aws-sdk-for-php/sdk.class.php';
 
@@ -23,17 +20,20 @@ $dynamo = new AmazonDynamoDB();
 $dynamo->set_hostname("dynamodb.ap-southeast-1.amazonaws.com");
 $dynamo->disable_ssl_verification();
 
+date_default_timezone_set('Asia/Kolkata');
+$date = date('Y/m/d h:i:s a', time());
+
 $user = $facebook->getUser();
+$userNum = intval($user);
 
 if ($user)  {
 	try {
 		$user_profile = $facebook->api('/me');
 	}catch(FacebookApiException $e) {
 		$user=0;
+		$facebook->destroySession();
 	}
 	if (!isset($_SESSION['UserId'])) {
-		date_default_timezone_set('Asia/Kolkata');
-		$date = date('Y/m/d h:i:s a', time());
 		$validUser = false;
 		if($user) {
 			try{
@@ -73,7 +73,7 @@ if ($user)  {
 				} else {
 					print "User profile: null";
 				}
-			}catch(FacebookApiException $e){
+			}catch(FacebookApiException $e) {
 				error_log($e);
 				$user = NULL;
 			}
@@ -93,6 +93,5 @@ if ($user)  {
 	}
 }
 
-$facebook->destroySession();
 
 ?>

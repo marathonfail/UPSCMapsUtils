@@ -110,8 +110,9 @@ else:
  var placesMarked = [];
  var outlineMapStyleOpts;
  var modalId; // Id of open modal window.
+ var infoWindow;
  
-function fillWindow(){
+function fillWindow() {
 	var mapDiv = document.getElementById("mapDiv");
 	var infoDiv = document.getElementById("infoDiv");
 	try{
@@ -142,6 +143,27 @@ function reloadMap(name) {
 	          zoom: 5,
 	          mapTypeId: 'outline'
 	        };
+	outlineMapStyleOpts = [ 
+	                       { 
+	                   	"featureType": "administrative", "elementType": "labels", "stylers": 
+	                       	[ { "visibility": "off" } ] 
+	           			},
+	           			{ "featureType": "landscape", "elementType": "geometry", "stylers": 
+	               			[ { "visibility": "on" } ] 
+	           			},
+	               		{ "featureType": "road", "elementType": "geometry", "stylers":
+	                   		 [ { "visibility": "off" } ] 
+	              		    },
+	              		    { "featureType": "poi", "elementType": "labels", "stylers": 
+	                  		    [ { "visibility": "off" } ] 
+	              		    },
+	              		    { "featureType": "landscape.natural", "stylers":
+	              		        [ { "weight": 0.1 }, { "color": "#ffffff" } ] 
+	              		    },
+	          		        { "featureType": "poi.park", "stylers": 
+	          	   		        [ { "color": "#ffffff" } ] 
+	       	   		    } 
+	       	   ];
 	map = new google.maps.Map(document.getElementById("mapDiv"), mapOptions);
 	map.mapTypes.set('outline', new google.maps.StyledMapType(outlineMapStyleOpts, { name: name }));
 	currMarker = new google.maps.Marker({
@@ -153,74 +175,65 @@ function reloadMap(name) {
       currMarker.setPosition(event.latLng);
       currMarker.setVisible(true);
       currMarker.setTitle("Click again to add details about the place");
+      if (document.getElementById("infoWindowPopupLat")) {
+    	  document.getElementById("infoWindowPopupLat").value = Math.ceil(currMarker.getPosition().lat() * 100)/100;
+      }
+      if (document.getElementById("infoWindowPopupLng")) {
+    	  document.getElementById("infoWindowPopupLng").value = Math.ceil(currMarker.getPosition().lng() * 100)/100;
+      }
    });
    google.maps.event.addListener(currMarker, 'click', function(event) {
-	   var infowindow = new google.maps.InfoWindow({
-		    content: "This functionality is coming soon.. "
-		});
-		infowindow.open(map, currMarker);
+	   var html = "<div id=\"\">";
+	   var lat = Math.ceil(currMarker.getPosition().lat() * 100.0)/100;
+	   var lng = Math.ceil(currMarker.getPosition().lng() * 100.0)/100;
+	   html += "<form id=\"addPlaceForm\">";
+	   html += "<label>Map Name</label><input type=\"text\" name=\"mapName\" value=\"" + currentMapName + "\" readOnly=\"readOnly\"/>";
+	   html += "<label>Place Name</label>";
+	   html += "<input type=\"text\" name=\"placeName\"/><br>";
+	   html += "<label>Position: </label> Lat: <input id=\"infoWindowPopupLat\" type=\"text\" width=6 name=\"lat\" value=\"" + lat +
+	   					"\"/>,  Lng: <input id=\"infoWindowPopupLng\" type=\"text\" width=6 name=\"lng\" value=\"" + lng + "\"/><br>";
+	   html += "<label>Description:</label><textarea rows=6 cols=50 name=\"description\" maxlength=300></textarea><br>"; 
+	   html += "<button type=\"submit\" onclick=\"return addPlace()\" name=\"Add\">Add Place</button>";
+	   html += "<img src=\"static/images/ajax-loader.gif\" style=\"visibility: hidden\" id=\"addPlaceAjaxLoader\" />";
+	   html += "</form>";
+	   html += "<div id=\"addPlaceResponse\"></div>";
+	   html += "</div>";
+	   if (infoWindow) {
+		   infoWindow.close();
+	   }
+	   infoWindow = new google.maps.InfoWindow({
+		    content: html 
+	   });
+	   infoWindow.open(map, currMarker);
    });
+}
+
+function addPlace() {
+	document.getElementById("addPlaceAjaxLoader").style.visibility='visible';
+	$.ajax({
+        type: "POST",
+        url: "addPlaceToUserMap.php",
+        data: $("#addPlaceForm").serialize(), // serializes the form's elements.
+        success: function(data)
+        {
+            var jsonData = json_parse(data);
+            if (jsonData.responseCode == 200) {
+            	var message = "<font size=3 color=green>" + jsonData.success + "</font>";
+                $("#addPlaceResponse").html(message);
+                document.getElementById("addPlaceAjaxLoader").style.visibility='hidden';
+                setTimeout(function() { if (infoWindow) infoWindow.close(); }, 3000);
+            }
+        }
+	});
+	return false;
 }
 
 
 function load()
 {
 	    fillWindow();
-	    
-		var mapOptions = {
-		  mapTypeControl: true,
-		  mapTypeControlOptions: {
-			  mapTypeIds: ['outline', google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN],
-		      position: google.maps.ControlPosition.TOP_LEFT
-		  },
-          center: new google.maps.LatLng(22.0, 81.0),
-          zoom: 5,
-          mapTypeId: 'outline'
-        };
-
-        outlineMapStyleOpts = [ 
-                { 
-            	"featureType": "administrative", "elementType": "labels", "stylers": 
-                	[ { "visibility": "off" } ] 
-    			},
-    			{ "featureType": "landscape", "elementType": "geometry", "stylers": 
-        			[ { "visibility": "on" } ] 
-    			},
-        		{ "featureType": "road", "elementType": "geometry", "stylers":
-            		 [ { "visibility": "off" } ] 
-       		    },
-       		    { "featureType": "poi", "elementType": "labels", "stylers": 
-           		    [ { "visibility": "off" } ] 
-       		    },
-       		    { "featureType": "landscape.natural", "stylers":
-       		        [ { "weight": 0.1 }, { "color": "#ffffff" } ] 
-       		    },
-   		        { "featureType": "poi.park", "stylers": 
-   	   		        [ { "color": "#ffffff" } ] 
-	   		    } 
-	   ];
-        
-	    map = new google.maps.Map(document.getElementById("mapDiv"), mapOptions);
-	    map.mapTypes.set('outline', new google.maps.StyledMapType(outlineMapStyleOpts, { name: 'Outline Map' }));
-	    
-	    currMarker = new google.maps.Marker({
-	          position: map.getCenter(),
-	          map: map
-	        });
-	    
-	    google.maps.event.addListener(map, 'click', function(event) {
-	        currMarker.setPosition(event.latLng);
-	        currMarker.setVisible(true);
-	        currMarker.setTitle("Click again to add details about the place");
-	     });
-	     
-	    google.maps.event.addListener(currMarker, 'click', function(event) {
-	 	   var infowindow = new google.maps.InfoWindow({
-	 		    content: "Hello"
-	 		});
-	 		infowindow.open();
-	    });
- }
+	    reloadMap("Outline Map");
+}
  
  function clearMap() {
    currMarker.setVisible(false);
@@ -521,7 +534,8 @@ function load()
 
 		$("#mapSearchInput").keypress(function(){
 			var searchInput = document.getElementById("mapSearchInput").value;
-			if (searchInput.length >= 2 && searchInput.length%2 == 0) {
+			$("#mapSearchOutputDiv").html("");
+			if (searchInput.length >= 2) {
 				 $("#myMapsAjaxLoader").show();
 				 var available = false;
 				 $.get('listUserMaps.php', {query: searchInput}, function(data) {
@@ -582,6 +596,7 @@ function load()
 		           }
 		           
 	               $("#createMapResponse").html(message); // show response from the php script.
+	               setTimeout(function() { $("#createMapResponse").html(""); }, 7000);
 	               $("#transparentDiv").hide();
 	               modalId = null;
 	           }
