@@ -22,7 +22,7 @@ $mapName = str_replace(" ", ".", $mapName);
 $getUserMapResponse = $dynamo->get_item(array(
 		"TableName" => "MapPlusPlusUserMaps",
 		"Key" => $dynamo->attributes(array(
-				'HashKeyElement' => $userNum,
+				'HashKeyElement' => $user,
 				'RangeKeyElement' => $mapName,
 		)),
 		"AttributesToGet" => array("UserId", "MapName", "originalName", "mapDescription"),
@@ -43,7 +43,7 @@ if ($getUserMapResponse->isOK()) {
 			$createUserMapResponse = $dynamo->put_item(array(
 					"TableName" => "MapPlusPlusUserMaps",
 					"Item" => $dynamo->attributes(array(
-							"UserId" => $userNum,
+							"UserId" => $user,
 							"MapName" => $mapName,
 							"mapDescription" => $mapDescription,
 							"originalName" => $originalName,
@@ -63,6 +63,7 @@ if ($getUserMapResponse->isOK()) {
 } else {
 	$flash_error = "Unable to create map at this time, please try again later.";
 	$resultCode = 500;
+	print_r($getUserMapResponse);
 }
 
 $result = array();
@@ -77,8 +78,8 @@ if ($resultCode == 400 || $resultCode == 200) {
 				"success" => $flash_success,
 			    "resultCode" => $resultCode,
 				"map" => array(
-							array("mapName" => $originalName),
-							array("mapDescription" => $mapDescription)
+							array("mapName" => $originalName,
+									"mapDescription" => $mapDescription)
 						)
 			);
 }

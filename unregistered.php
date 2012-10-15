@@ -21,6 +21,10 @@
      white-space: nowrap;
    }
  </style>
+ 
+ <script src="js/jquery-1.8.2.js" type="text/javascript"></script>
+ <script src="js/MarkerWithLabel.js" type="text/javascript"></script>
+<script src="js/json-parse.js" type="text/javascript"></script>
 
 <script language="javascript" type="text/javascript">
  //<![CDATA[
@@ -30,6 +34,7 @@
  var map;
  var currMarker;
  var placesMarked = [];
+ var currentMapName;
  
 function fillWindow(){
 	var mapDiv = document.getElementById("mapDiv");
@@ -51,59 +56,64 @@ function fillWindow(){
 	}
 }
 
+function reloadMap(name) {
+	var mapOptions = {
+			  mapTypeControl: false,
+			  mapTypeControlOptions: {
+				  mapTypeIds: ['outline'],
+			      position: google.maps.ControlPosition.TOP_CENTER
+			  },
+	          center: new google.maps.LatLng(22.0, 81.0),
+	          zoom: 5,
+	          mapTypeId: 'outline',
+	          zoomControl: false
+	        };
+	outlineMapStyleOpts = [ 
+	                       { 
+	                   	"featureType": "administrative", "elementType": "labels", "stylers": 
+	                       	[ { "visibility": "off" } ] 
+	           			},
+	           			{ "featureType": "landscape", "elementType": "geometry", "stylers": 
+	               			[ { "visibility": "on" } ] 
+	           			},
+	               		{ "featureType": "road", "elementType": "geometry", "stylers":
+	                   		 [ { "visibility": "off" } ] 
+	              		    },
+	              		    { "featureType": "poi", "elementType": "labels", "stylers": 
+	                  		    [ { "visibility": "off" } ] 
+	              		    },
+	              		    { "featureType": "landscape.natural", "stylers":
+	              		        [ { "weight": 0.1 }, { "color": "#ffffff" } ] 
+	              		    },
+	          		        { "featureType": "poi.park", "stylers": 
+	          	   		        [ { "color": "#ffffff" } ] 
+	       	   		    } 
+	       	   ];
+	map = new google.maps.Map(document.getElementById("mapDiv"), mapOptions);
+	map.mapTypes.set('outline', new google.maps.StyledMapType(outlineMapStyleOpts, { name: name }));
+	currMarker = new google.maps.Marker({
+        position: map.getCenter(),
+        map: map
+      });
+    currentMapName = name;
+   google.maps.event.addListener(map, 'click', function(event) {
+      currMarker.setPosition(event.latLng);
+      currMarker.setVisible(true);
+      currMarker.setTitle("Click again to add details about the place");
+      if (document.getElementById("infoWindowPopupLat")) {
+    	  document.getElementById("infoWindowPopupLat").value = Math.ceil(currMarker.getPosition().lat() * 100)/100;
+      }
+      if (document.getElementById("infoWindowPopupLng")) {
+    	  document.getElementById("infoWindowPopupLng").value = Math.ceil(currMarker.getPosition().lng() * 100)/100;
+      }
+   });
+}
+
 
 function load()
 {
 	    fillWindow();
-	    
-		var mapOptions = {
-		  mapTypeControlOptions: {
-			  mapTypeIds: ['outline', google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN]
-		  },
-          center: new google.maps.LatLng(22.0, 81.0),
-          zoom: 5,
-          mapTypeId: 'outline'
-        };
-
-        var outlineMapStyleOpts = [ 
-                { 
-            	"featureType": "administrative", "elementType": "labels", "stylers": 
-                	[ { "visibility": "off" } ] 
-    			},
-    			{ "featureType": "landscape", "elementType": "geometry", "stylers": 
-        			[ { "visibility": "on" } ] 
-    			},
-        		{ "featureType": "road", "elementType": "geometry", "stylers":
-            		 [ { "visibility": "off" } ] 
-       		    },
-       		    { "featureType": "poi", "elementType": "labels", "stylers": 
-           		    [ { "visibility": "off" } ] 
-       		    },
-       		    { "featureType": "landscape.natural", "stylers":
-       		        [ { "weight": 0.1 }, { "color": "#ffffff" } ] 
-       		    },
-   		        { "featureType": "poi.park", "stylers": 
-   	   		        [ { "color": "#ffffff" } ] 
-	   		    } 
-	   ];
-        
-	    map = new google.maps.Map(document.getElementById("mapDiv"), mapOptions);
-	    map.mapTypes.set('outline', new google.maps.StyledMapType(outlineMapStyleOpts, { name: 'Outline' }));
-	    
-	    currMarker = new google.maps.Marker({
-	          position: map.getCenter(),
-	          map: map
-	        });
-	    
-	    google.maps.event.addListener(map, 'click', function(event) {
-	        currMarker.setPosition(event.latLng);
-	        currMarker.setVisible(true);
-	        currMarker.setTitle("Click again to add details about the place");
-	     });
-	     
-	     google.maps.event.addListener(currMarker, 'click', function(event) {
-	        
-	     }); 
+		reloadMap("Outline Map");
  }
  
  function clearMap() {
@@ -190,29 +200,35 @@ function load()
    };
    return places[selectedMap];
  }
+
+
+ function loadMap(selectedMap) {
+	 if (placesMarked == null) {
+		    placesMarked = [];
+		   } else {
+		    placesMarked = null;
+		    placesMarked = [];
+		   }
+		   reloadMap(selectedMap);
+		   var placesToLoad = getPlaces(selectedMap);
+		   for (var i in placesToLoad) {
+		    var placeMarker = new MarkerWithLabel({
+		      position: placesToLoad[i].latLng, 
+		      map: map,
+		      title: placesToLoad[i].name,
+		      labelContent: placesToLoad[i].name,
+		      labelAnchor: new google.maps.Point(30, 0),
+		      labelClass: "labels",
+		      labelStyle: {opacity: 0.75}
+		     });
+		     placesMarked.push(placeMarker);
+	  }
+ }
  
  function loadPlaces() {
    var selectMapOption = document.getElementById("sampleMapListDropDown");
    var selectedMap = selectMapOption.options[selectMapOption.selectedIndex].value;
-   if (placesMarked == null) {
-    placesMarked = [];
-   } else {
-    placesMarked = null;
-    placesMarked = [];
-   }
-   var placesToLoad = getPlaces(selectedMap);
-   for (var i in placesToLoad) {
-    var placeMarker = new MarkerWithLabel({
-      position: placesToLoad[i].latLng, 
-      map: map,
-      title: placesToLoad[i].name,
-      labelContent: placesToLoad[i].name,
-      labelAnchor: new google.maps.Point(30, 0),
-      labelClass: "labels",
-      labelStyle: {opacity: 0.75}
-     });
-     placesMarked.push(placeMarker);
-    }
+   loadMap(selectedMap);
  }
 
  var practicePlaces=[]
@@ -284,17 +300,74 @@ function load()
 	   clearMap();
 	   showPlace();
   }
+
+  $(document).ready(function() {
+	  $("#searchAddress").keyup(function(event){
+			if (event.keyCode == 13) {
+				mapSearch();
+			}
+	  });
+
+	  refreshMap();
+
+  });
+
+  function refreshMap() {
+	  var id = 0;
+	  var mapList = ["MetropolitanCities", "MangrovesInIndia", "IndusValleyCivilization", "NuclearPowerPlants"];
+	  var intervalId = setInterval(function() {
+		  loadMap(mapList[id]);
+		  id=(id+1)%mapList.length;
+	  }, 7000);
+  }
+
+ function mapSearch() {
+		$("#googleMapsSearchAjaxLoader").show();
+		var addressField = document.getElementById('searchAddress');
+		var geocoder = new google.maps.Geocoder();
+		geocoder.geocode(
+		        {'address': addressField.value}, 
+		        function(results, status) {
+			        var html = "";
+		            if (status == google.maps.GeocoderStatus.OK) {
+		                var loc = results[0].geometry.location;
+		                if (currMarker == null) {
+		                	currMarker = new google.maps.Marker({
+		                        position: loc,
+		                        map: map,
+		                        title: addressField.value,
+		                        visible: true
+		                    });
+		                }
+		                currMarker.setPosition(loc);
+		                currMarker.setVisible(true);
+		                map.setCenter(loc);
+		                html = "<font size=2 color=green><i>" + results.length + " results found for "+ addressField.value + "</i></font>";
+		                // use loc.lat(), loc.lng()
+		            }
+		            else {
+		                html = "<font size=2 color=red><i>" + addressField.value + " could not be found</i></font>"
+		            }
+		            $("#mapSearchResult").html(html);
+		            setTimeout(function() { $("#mapSearchResult").html("");}, 50000);
+		        }
+		  );
+		$("#googleMapsSearchAjaxLoader").hide();
+	}
  
 </script>
 </head>
 
 
-<body onload="load()" style="background-color: #D8D8D8" >
+<body onload="load()" style="background-color: #ddf7c6; height: 100%; margin: 0; padding: 0;">
     
 	<div id="infoDiv"
-		style="overflow: auto; border-width: 0px; position: absolute; left: 5px; top: 0px; width: 290px; height: 100%;">
-	<b>About:</b>
-	<p>
+		style="overflow: auto; border-width: 0px; position: absolute; left: 0px; top: 0px; width: 300px; height: 100%;">
+	<div id="logo" style="position: absolute; left: 0px; top: 0px; width: 295px; height: 100px;">
+	   <img src="static/images/Map++.jpg"/>
+	</div>
+	<div style="position:absolute; left: 5px; top: 105px; width: 290px">
+	  <p>
 			map++ is a utility built exclusively for Civil Service aspirants with
 			History and Geography optionals to practice for map based questions
 			which fetches easy marks with good practice. map++ allows you to create
@@ -366,10 +439,18 @@ function load()
 		</form>
 		<div id="sampleMapPracticePlace"></div>
 		
-		
+		</div>
 	</div>
 	<div id="mapDiv"
 		style="position: absolute; left: 300px; top: 0px; height: 100%"></div>
+	<div id="mapHeading" style="position:absolute; left: 400px; top: 10px; height: 30px; background: white; font: ">
+	</div>
+	<div id="mapSearchDiv" style="position: relative; float: right; top: 0px; height: 40px; zIndex=10;">
+		<input type="text" id="searchAddress" value=""/>
+		<button onclick="mapSearch();">Search In Map</button>
+		<img src="static/images/ajax-loader.gif" id="googleMapsSearchAjaxLoader" style="display: none" />
+		<div id="mapSearchResult"></div>
+	</div>
 
 </body>
 
